@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Sidebar from '@/components/Sidebar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus, Eye } from 'lucide-react';
+import { Search, Plus, Eye, Edit } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -30,6 +29,7 @@ import {
 } from '@/components/ui/sheet';
 import EmployeeProfile from '@/components/EmployeeProfile';
 import AddEmployeeForm from '@/components/AddEmployeeForm';
+import EditEmployeeForm from '@/components/EditEmployeeForm';
 
 interface Employee {
   id: string;
@@ -42,6 +42,7 @@ interface Employee {
   job_description: string;
   date_of_resumption: string;
   profile_image_url: string;
+  department_id: string;
   department: {
     name: string;
   } | null;
@@ -53,7 +54,9 @@ const Employees = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
+  const [isEditEmployeeOpen, setIsEditEmployeeOpen] = useState(false);
 
   const { data: employees, isLoading } = useQuery({
     queryKey: ['employees', searchTerm, currentPage],
@@ -101,6 +104,11 @@ const Employees = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
+  };
+
+  const handleEditEmployee = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setIsEditEmployeeOpen(true);
   };
 
   return (
@@ -188,23 +196,33 @@ const Employees = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedEmployee(employee)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                          <DialogTitle>Employee Profile</DialogTitle>
-                          {selectedEmployee && (
-                            <EmployeeProfile employee={selectedEmployee} />
-                          )}
-                        </DialogContent>
-                      </Dialog>
+                      <div className="flex items-center justify-center gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedEmployee(employee)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                            <DialogTitle>Employee Profile</DialogTitle>
+                            {selectedEmployee && (
+                              <EmployeeProfile employee={selectedEmployee} />
+                            )}
+                          </DialogContent>
+                        </Dialog>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditEmployee(employee)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -264,6 +282,18 @@ const Employees = () => {
             </div>
           )}
         </div>
+
+        {/* Edit Employee Sheet */}
+        <Sheet open={isEditEmployeeOpen} onOpenChange={setIsEditEmployeeOpen}>
+          <SheetContent side="right" className="w-[600px] sm:w-[800px] sm:max-w-[800px]">
+            {editingEmployee && (
+              <EditEmployeeForm 
+                employee={editingEmployee} 
+                onClose={() => setIsEditEmployeeOpen(false)} 
+              />
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );
