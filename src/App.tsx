@@ -16,22 +16,24 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/departments" element={<Departments />} />
-          <Route path="/employees" element={<Employees />} />
-          <Route path="/resignations" element={<Resignations />} />
-          <Route path="/rewards" element={<Rewards />} />
-          <Route path="/kpi" element={<KPI />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <BrowserRouter>
+      <TooltipProvider>
+        <div className="min-h-screen">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/departments" element={<Departments />} />
+            <Route path="/employees" element={<Employees />} />
+            <Route path="/resignations" element={<Resignations />} />
+            <Route path="/rewards" element={<Rewards />} />
+            <Route path="/kpi" element={<KPI />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+        <Toaster />
+        <Sonner />
+      </TooltipProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
