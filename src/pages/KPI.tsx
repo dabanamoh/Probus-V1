@@ -44,6 +44,7 @@ interface KPI {
   current: number;
   score: number;
   department: string;
+  employee: string;
   lastUpdated: string;
 }
 
@@ -101,7 +102,7 @@ const KPI = () => {
     }
   ];
 
-  // Mock KPI data
+  // Enhanced KPI data with employee information
   const kpis: KPI[] = [
     {
       id: '1',
@@ -111,6 +112,7 @@ const KPI = () => {
       current: 85,
       score: 94,
       department: 'Purchasing/Procurement',
+      employee: 'Sarah Johnson',
       lastUpdated: '2024-01-15'
     },
     {
@@ -121,6 +123,7 @@ const KPI = () => {
       current: 72,
       score: 90,
       department: 'Purchasing/Procurement',
+      employee: 'Michael Chen',
       lastUpdated: '2024-01-14'
     },
     {
@@ -131,6 +134,7 @@ const KPI = () => {
       current: 88,
       score: 93,
       department: 'Customer Service',
+      employee: 'Emily Davis',
       lastUpdated: '2024-01-13'
     },
     {
@@ -141,6 +145,7 @@ const KPI = () => {
       current: 85000,
       score: 85,
       department: 'Sales/Marketing Department',
+      employee: 'David Wilson',
       lastUpdated: '2024-01-12'
     },
     {
@@ -151,6 +156,7 @@ const KPI = () => {
       current: 78,
       score: 92,
       department: 'Production/Operations',
+      employee: 'Lisa Brown',
       lastUpdated: '2024-01-11'
     },
     {
@@ -161,6 +167,7 @@ const KPI = () => {
       current: 92,
       score: 97,
       department: 'Finance Department',
+      employee: 'Robert Garcia',
       lastUpdated: '2024-01-10'
     },
     {
@@ -171,7 +178,41 @@ const KPI = () => {
       current: 87,
       score: 97,
       department: 'Human Resources',
+      employee: 'Jennifer Lee',
       lastUpdated: '2024-01-09'
+    },
+    {
+      id: '8',
+      category: 'Quality Control',
+      description: 'Percentage of products meeting quality standards',
+      target: 98,
+      current: 96,
+      score: 98,
+      department: 'Production/Operations',
+      employee: 'Mark Thompson',
+      lastUpdated: '2024-01-08'
+    },
+    {
+      id: '9',
+      category: 'Customer Response Time',
+      description: 'Average time to respond to customer inquiries',
+      target: 2,
+      current: 1.5,
+      score: 95,
+      department: 'Customer Service',
+      employee: 'Amanda Rodriguez',
+      lastUpdated: '2024-01-07'
+    },
+    {
+      id: '10',
+      category: 'Marketing ROI',
+      description: 'Return on investment for marketing campaigns',
+      target: 300,
+      current: 280,
+      score: 93,
+      department: 'Sales/Marketing Department',
+      employee: 'Chris Martinez',
+      lastUpdated: '2024-01-06'
     }
   ];
 
@@ -294,6 +335,9 @@ const KPI = () => {
                   KPI Category
                 </TableHead>
                 <TableHead className="font-bold text-white text-center border-r border-white">
+                  Employee
+                </TableHead>
+                <TableHead className="font-bold text-white text-center border-r border-white">
                   Department
                 </TableHead>
                 <TableHead className="font-bold text-white text-center border-r border-white">
@@ -321,6 +365,9 @@ const KPI = () => {
                 >
                   <TableCell className="text-center font-medium text-gray-900 border-r border-gray-200">
                     {kpi.category}
+                  </TableCell>
+                  <TableCell className="text-center text-gray-700 border-r border-gray-200 font-medium">
+                    {kpi.employee}
                   </TableCell>
                   <TableCell className="text-center text-gray-700 border-r border-gray-200">
                     {kpi.department}

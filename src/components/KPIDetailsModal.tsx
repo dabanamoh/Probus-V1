@@ -20,6 +20,7 @@ interface KPIDetailsModalProps {
     current: number;
     score: number;
     department: string;
+    employee: string;
     lastUpdated: string;
   } | null;
 }
@@ -50,13 +51,18 @@ const KPIDetailsModal = ({ isOpen, onClose, kpi }: KPIDetailsModalProps) => {
           {/* Basic Information */}
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <label className="text-sm font-medium text-gray-500">Employee</label>
+              <p className="text-lg font-semibold text-blue-600">{kpi.employee}</p>
+            </div>
+            <div>
               <label className="text-sm font-medium text-gray-500">Department</label>
               <p className="text-lg font-semibold text-gray-900">{kpi.department}</p>
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-500">Last Updated</label>
-              <p className="text-lg text-gray-900">{new Date(kpi.lastUpdated).toLocaleDateString()}</p>
-            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-500">Last Updated</label>
+            <p className="text-lg text-gray-900">{new Date(kpi.lastUpdated).toLocaleDateString()}</p>
           </div>
 
           {/* Description */}
@@ -100,6 +106,15 @@ const KPIDetailsModal = ({ isOpen, onClose, kpi }: KPIDetailsModalProps) => {
             <Badge className={`${performance.color} border-0 text-sm font-medium`}>
               {performance.label}
             </Badge>
+          </div>
+
+          {/* Employee Performance Insights */}
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h4 className="text-sm font-semibold text-blue-900 mb-2">Employee Performance Insights</h4>
+            <p className="text-sm text-blue-800">
+              <strong>{kpi.employee}</strong> is currently achieving <strong>{kpi.score}%</strong> of their target in <strong>{kpi.category}</strong>. 
+              This performance level is classified as <strong>{performance.label}</strong>.
+            </p>
           </div>
 
           {/* Performance Scale Reference */}

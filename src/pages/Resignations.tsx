@@ -47,7 +47,7 @@ interface Employee {
 interface ResignationTermination {
   id: string;
   employee_id: string;
-  request_type: string;
+  request_type: 'resignation' | 'termination';
   request_date: string;
   years_of_service: number;
   status: string;
@@ -99,7 +99,20 @@ const Resignations = () => {
     }
   });
 
-  const filteredResignations = resignations.filter(resignation =>
+  const transformedResignations = resignations.map((resignation): ResignationData => {
+    return {
+      id: resignation.id,
+      request_type: resignation.request_type as "resignation" | "termination",
+      years_of_service: resignation.years_of_service,
+      request_date: resignation.request_date,
+      status: resignation.status as "pending" | "valid" | "invalid",
+      description: resignation.description || '',
+      documents_url: resignation.documents_url || '',
+      employee: resignation.employee
+    };
+  });
+
+  const filteredResignations = transformedResignations.filter(resignation =>
     resignation.employee?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resignation.employee?.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resignation.employee?.department?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
