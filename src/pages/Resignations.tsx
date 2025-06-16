@@ -51,6 +51,8 @@ interface ResignationTermination {
   request_date: string;
   years_of_service: number;
   status: string;
+  description?: string;
+  documents_url?: string;
   created_at: string;
   updated_at: string;
   employee: Employee;
@@ -142,8 +144,8 @@ const Resignations = () => {
       years_of_service: resignation.years_of_service,
       request_date: resignation.request_date,
       status: resignation.status as "pending" | "valid" | "invalid",
-      description: '', // Default empty since not in database
-      documents_url: '', // Default empty since not in database
+      description: resignation.description || '', // Use the actual description or default to empty
+      documents_url: resignation.documents_url || '', // Use the actual documents_url or default to empty
       employee: resignation.employee
     };
     
