@@ -40,6 +40,7 @@ const Departments = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
 
   const { data: departments, isLoading, refetch } = useQuery({
     queryKey: ['departments'],
@@ -81,6 +82,19 @@ const Departments = () => {
     }
   };
 
+  const handleDepartmentSelect = (departmentId: string) => {
+    setSelectedDepartment(departmentId);
+  };
+
+  const handleViewProfile = () => {
+    if (selectedDepartment) {
+      const department = departments?.find(dept => dept.id === selectedDepartment);
+      if (department?.manager_id) {
+        handleViewEmployee(department.manager_id);
+      }
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -111,6 +125,8 @@ const Departments = () => {
             <Button 
               variant="outline" 
               className="border-blue-400 text-blue-400 hover:bg-blue-50 px-6"
+              onClick={handleViewProfile}
+              disabled={!selectedDepartment}
             >
               View Profile
             </Button>
@@ -155,9 +171,17 @@ const Departments = () => {
                     <div key={department.id} className={`grid grid-cols-4 gap-4 p-4 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                       <div className="font-medium text-gray-900">{department.name}</div>
                       <div className="text-gray-600 text-sm">{department.description}</div>
-                      <div className="text-gray-600">Manager</div>
+                      <div className="text-gray-600">
+                        {department.manager ? department.manager.name : 'No Manager'}
+                      </div>
                       <div>
-                        <div className="w-4 h-4 border-2 border-blue-400 rounded-full"></div>
+                        <input
+                          type="radio"
+                          name="selectedDepartment"
+                          checked={selectedDepartment === department.id}
+                          onChange={() => handleDepartmentSelect(department.id)}
+                          className="w-4 h-4 text-blue-400 border-2 border-blue-400 focus:ring-blue-400 focus:ring-2"
+                        />
                       </div>
                     </div>
                   ))}
