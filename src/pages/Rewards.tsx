@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,70 +59,88 @@ const Rewards = () => {
   const [isRewardDetailsOpen, setIsRewardDetailsOpen] = useState(false);
 
   // Fetch incidents with employee and department data
-  const { data: incidents = [], isLoading: incidentsLoading } = useQuery({
+  const { data: incidents = [], isLoading: incidentsLoading, error: incidentsError } = useQuery({
     queryKey: ['incidents'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('incidents')
-        .select(`
-          id,
-          incident_type,
-          description,
-          date_reported,
-          location,
-          status,
-          employee:employees!incidents_reporter_id_fkey(
+      try {
+        const { data, error } = await supabase
+          .from('incidents')
+          .select(`
             id,
-            name,
-            position,
-            profile_image_url,
-            department:departments!employees_department_id_fkey(
+            incident_type,
+            description,
+            date_reported,
+            location,
+            status,
+            employee:employees!incidents_reporter_id_fkey(
               id,
-              name
+              name,
+              position,
+              profile_image_url,
+              department:departments!employees_department_id_fkey(
+                id,
+                name
+              )
             )
-          )
-        `)
-        .order('date_reported', { ascending: false });
+          `)
+          .order('date_reported', { ascending: false });
 
-      if (error) throw error;
-      return data as Incident[];
+        if (error) {
+          console.error('Error fetching incidents:', error);
+          throw error;
+        }
+        
+        return (data || []) as Incident[];
+      } catch (error) {
+        console.error('Failed to fetch incidents:', error);
+        return [];
+      }
     },
   });
 
   // Fetch rewards with employee and incident data
-  const { data: rewards = [], isLoading: rewardsLoading } = useQuery({
+  const { data: rewards = [], isLoading: rewardsLoading, error: rewardsError } = useQuery({
     queryKey: ['rewards'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('rewards_punishments')
-        .select(`
-          id,
-          type,
-          category,
-          description,
-          amount,
-          date_awarded,
-          status,
-          awarded_by,
-          employee:employees!rewards_punishments_employee_id_fkey(
+      try {
+        const { data, error } = await supabase
+          .from('rewards_punishments')
+          .select(`
             id,
-            name,
-            position,
-            profile_image_url,
-            department:departments!employees_department_id_fkey(
+            type,
+            category,
+            description,
+            amount,
+            date_awarded,
+            status,
+            awarded_by,
+            employee:employees!rewards_punishments_employee_id_fkey(
               id,
-              name
+              name,
+              position,
+              profile_image_url,
+              department:departments!employees_department_id_fkey(
+                id,
+                name
+              )
+            ),
+            incident:incidents!rewards_punishments_incident_id_fkey(
+              id,
+              description
             )
-          ),
-          incident:incidents!rewards_punishments_incident_id_fkey(
-            id,
-            description
-          )
-        `)
-        .order('date_awarded', { ascending: false });
+          `)
+          .order('date_awarded', { ascending: false });
 
-      if (error) throw error;
-      return data as Reward[];
+        if (error) {
+          console.error('Error fetching rewards:', error);
+          throw error;
+        }
+
+        return (data || []) as Reward[];
+      } catch (error) {
+        console.error('Failed to fetch rewards:', error);
+        return [];
+      }
     },
   });
 
@@ -137,24 +156,39 @@ const Rewards = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
   };
 
-  const filteredIncidents = incidents.filter(incident =>
-    incident.employee?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    incident.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    incident.employee?.department?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredIncidents = incidents.filter(incident => {
+    if (!incident || !incident.employee) return false;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      incident.employee.name?.toLowerCase().includes(searchLower) ||
+      incident.description?.toLowerCase().includes(searchLower) ||
+      incident.employee.department?.name?.toLowerCase().includes(searchLower)
+    );
+  });
 
-  const filteredRewards = rewards.filter(reward =>
-    reward.employee?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    reward.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    reward.employee?.department?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRewards = rewards.filter(reward => {
+    if (!reward || !reward.employee) return false;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      reward.employee.name?.toLowerCase().includes(searchLower) ||
+      reward.category?.toLowerCase().includes(searchLower) ||
+      reward.employee.department?.name?.toLowerCase().includes(searchLower)
+    );
+  });
 
   const handleViewIncident = (incident: Incident) => {
     setSelectedIncident(incident);
@@ -165,6 +199,26 @@ const Rewards = () => {
     setSelectedReward(reward);
     setIsRewardDetailsOpen(true);
   };
+
+  const pendingIncidents = incidents.filter(i => i?.status === 'pending').length;
+  const totalRewards = rewards.filter(r => r?.type === 'reward').length;
+  const approvedRewards = rewards.filter(r => r?.status === 'approved').length;
+
+  if (incidentsError || rewardsError) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center py-12">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Data</h2>
+              <p className="text-gray-600">There was an issue loading the rewards and incidents data. Please try again later.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -220,9 +274,7 @@ const Rewards = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Pending Reports</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {incidents.filter(i => i.status === 'pending').length}
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900">{pendingIncidents}</p>
                   </div>
                 </div>
               </CardContent>
@@ -236,9 +288,7 @@ const Rewards = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Total Rewards</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {rewards.filter(r => r.type === 'reward').length}
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900">{totalRewards}</p>
                   </div>
                 </div>
               </CardContent>
@@ -252,9 +302,7 @@ const Rewards = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Approved Rewards</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {rewards.filter(r => r.status === 'approved').length}
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900">{approvedRewards}</p>
                   </div>
                 </div>
               </CardContent>
@@ -279,6 +327,10 @@ const Rewards = () => {
                     <div className="flex justify-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
+                  ) : filteredIncidents.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No incident reports found.</p>
+                    </div>
                   ) : (
                     <Table>
                       <TableHeader>
@@ -300,12 +352,12 @@ const Rewards = () => {
                               <div className="flex items-center space-x-3">
                                 <img
                                   src={incident.employee?.profile_image_url || '/placeholder.svg'}
-                                  alt={incident.employee?.name}
+                                  alt={incident.employee?.name || 'Unknown'}
                                   className="w-8 h-8 rounded-full object-cover"
                                 />
                                 <div>
-                                  <p className="font-medium">{incident.employee?.name}</p>
-                                  <p className="text-sm text-gray-500">{incident.employee?.position}</p>
+                                  <p className="font-medium">{incident.employee?.name || 'Unknown'}</p>
+                                  <p className="text-sm text-gray-500">{incident.employee?.position || 'N/A'}</p>
                                 </div>
                               </div>
                             </TableCell>
@@ -351,6 +403,10 @@ const Rewards = () => {
                     <div className="flex justify-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
+                  ) : filteredRewards.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No rewards found.</p>
+                    </div>
                   ) : (
                     <Table>
                       <TableHeader>
@@ -372,12 +428,12 @@ const Rewards = () => {
                               <div className="flex items-center space-x-3">
                                 <img
                                   src={reward.employee?.profile_image_url || '/placeholder.svg'}
-                                  alt={reward.employee?.name}
+                                  alt={reward.employee?.name || 'Unknown'}
                                   className="w-8 h-8 rounded-full object-cover"
                                 />
                                 <div>
-                                  <p className="font-medium">{reward.employee?.name}</p>
-                                  <p className="text-sm text-gray-500">{reward.employee?.position}</p>
+                                  <p className="font-medium">{reward.employee?.name || 'Unknown'}</p>
+                                  <p className="text-sm text-gray-500">{reward.employee?.position || 'N/A'}</p>
                                 </div>
                               </div>
                             </TableCell>
@@ -389,7 +445,7 @@ const Rewards = () => {
                             </TableCell>
                             <TableCell>{reward.category}</TableCell>
                             <TableCell>
-                              {reward.amount ? `$${reward.amount.toFixed(2)}` : 'N/A'}
+                              {reward.amount ? `$${Number(reward.amount).toFixed(2)}` : 'N/A'}
                             </TableCell>
                             <TableCell>{formatDate(reward.date_awarded)}</TableCell>
                             <TableCell>

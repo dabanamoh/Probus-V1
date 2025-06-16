@@ -37,11 +37,16 @@ interface RewardDetailsProps {
 
 const RewardDetails = ({ reward }: RewardDetailsProps) => {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -64,6 +69,14 @@ const RewardDetails = ({ reward }: RewardDetailsProps) => {
       : 'bg-red-100 text-red-800';
   };
 
+  if (!reward) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">No reward data available.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Employee Information */}
@@ -78,14 +91,17 @@ const RewardDetails = ({ reward }: RewardDetailsProps) => {
           <div className="flex items-center gap-4">
             <img
               src={reward.employee?.profile_image_url || '/placeholder.svg'}
-              alt={reward.employee?.name}
+              alt={reward.employee?.name || 'Unknown'}
               className="w-16 h-16 rounded-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder.svg';
+              }}
             />
             <div>
               <h3 className="text-lg font-semibold text-gray-800">
-                {reward.employee?.name}
+                {reward.employee?.name || 'Unknown Employee'}
               </h3>
-              <p className="text-gray-600">{reward.employee?.position}</p>
+              <p className="text-gray-600">{reward.employee?.position || 'No Position'}</p>
               <p className="text-sm text-gray-500">
                 {reward.employee?.department?.name || 'No Department'}
               </p>
@@ -108,7 +124,7 @@ const RewardDetails = ({ reward }: RewardDetailsProps) => {
               <label className="text-sm font-medium text-gray-500">Type</label>
               <div className="mt-1">
                 <Badge className={getTypeBadge(reward.type)}>
-                  {reward.type.charAt(0).toUpperCase() + reward.type.slice(1)}
+                  {reward.type ? reward.type.charAt(0).toUpperCase() + reward.type.slice(1) : 'Unknown'}
                 </Badge>
               </div>
             </div>
@@ -116,19 +132,19 @@ const RewardDetails = ({ reward }: RewardDetailsProps) => {
               <label className="text-sm font-medium text-gray-500">Status</label>
               <div className="mt-1">
                 <span className={getStatusBadge(reward.status)}>
-                  {reward.status.charAt(0).toUpperCase() + reward.status.slice(1)}
+                  {reward.status ? reward.status.charAt(0).toUpperCase() + reward.status.slice(1) : 'Unknown'}
                 </span>
               </div>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">Category</label>
-              <p className="text-gray-800">{reward.category}</p>
+              <p className="text-gray-800">{reward.category || 'No Category'}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">Amount</label>
               <p className="text-gray-800 flex items-center gap-1">
                 <DollarSign className="w-4 h-4" />
-                {reward.amount ? `$${reward.amount.toFixed(2)}` : 'N/A'}
+                {reward.amount ? `$${Number(reward.amount).toFixed(2)}` : 'N/A'}
               </p>
             </div>
             <div>
@@ -152,7 +168,7 @@ const RewardDetails = ({ reward }: RewardDetailsProps) => {
           <CardTitle>Description</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-700 leading-relaxed">{reward.description}</p>
+          <p className="text-gray-700 leading-relaxed">{reward.description || 'No description available.'}</p>
         </CardContent>
       </Card>
 
@@ -163,7 +179,7 @@ const RewardDetails = ({ reward }: RewardDetailsProps) => {
             <CardTitle>Related Incident</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700 leading-relaxed">{reward.incident.description}</p>
+            <p className="text-gray-700 leading-relaxed">{reward.incident.description || 'No incident description available.'}</p>
           </CardContent>
         </Card>
       )}

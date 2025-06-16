@@ -31,11 +31,16 @@ interface IncidentDetailsProps {
 
 const IncidentDetails = ({ incident }: IncidentDetailsProps) => {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -52,6 +57,14 @@ const IncidentDetails = ({ incident }: IncidentDetailsProps) => {
     }
   };
 
+  if (!incident) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">No incident data available.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Reporter Information */}
@@ -66,14 +79,17 @@ const IncidentDetails = ({ incident }: IncidentDetailsProps) => {
           <div className="flex items-center gap-4">
             <img
               src={incident.employee?.profile_image_url || '/placeholder.svg'}
-              alt={incident.employee?.name}
+              alt={incident.employee?.name || 'Unknown'}
               className="w-16 h-16 rounded-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder.svg';
+              }}
             />
             <div>
               <h3 className="text-lg font-semibold text-gray-800">
-                {incident.employee?.name}
+                {incident.employee?.name || 'Unknown Employee'}
               </h3>
-              <p className="text-gray-600">{incident.employee?.position}</p>
+              <p className="text-gray-600">{incident.employee?.position || 'No Position'}</p>
               <p className="text-sm text-gray-500">
                 {incident.employee?.department?.name || 'No Department'}
               </p>
@@ -94,13 +110,13 @@ const IncidentDetails = ({ incident }: IncidentDetailsProps) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-500">Incident Type</label>
-              <p className="text-gray-800 capitalize">{incident.incident_type}</p>
+              <p className="text-gray-800 capitalize">{incident.incident_type || 'Unknown'}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">Status</label>
               <div className="mt-1">
                 <span className={getStatusBadge(incident.status)}>
-                  {incident.status.charAt(0).toUpperCase() + incident.status.slice(1)}
+                  {incident.status ? incident.status.charAt(0).toUpperCase() + incident.status.slice(1) : 'Unknown'}
                 </span>
               </div>
             </div>
@@ -128,7 +144,7 @@ const IncidentDetails = ({ incident }: IncidentDetailsProps) => {
           <CardTitle>Incident Description</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-700 leading-relaxed">{incident.description}</p>
+          <p className="text-gray-700 leading-relaxed">{incident.description || 'No description available.'}</p>
         </CardContent>
       </Card>
     </div>
