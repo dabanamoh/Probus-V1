@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Search, Plus, Eye } from 'lucide-react';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import EmployeeProfile from '@/components/EmployeeProfile';
 import CreateDepartmentForm from '@/components/CreateDepartmentForm';
 import Sidebar from '@/components/Sidebar';
@@ -47,7 +48,7 @@ const Departments = () => {
         .from('departments')
         .select(`
           *,
-          manager:employees!departments_manager_id_fkey(*)
+          manager:manager_id(*)
         `);
       
       if (error) throw error;
@@ -85,13 +86,38 @@ const Departments = () => {
       <Sidebar />
       <div className="flex-1 p-6">
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Department Management</h1>
+          {/* Header Section */}
+          <div className="mb-6">
+            <div className="bg-blue-400 text-white p-6 rounded-lg mb-6">
+              <h1 className="text-2xl font-bold mb-2">Departments</h1>
+              <p className="opacity-90">Departments List</p>
+            </div>
+          </div>
+
+          {/* Search and Action Section */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search here..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-white"
+              />
+            </div>
+            <Button className="bg-blue-400 hover:bg-blue-500 text-white px-6">
+              Search
+            </Button>
+            <Button 
+              variant="outline" 
+              className="border-blue-400 text-blue-400 hover:bg-blue-50 px-6"
+            >
+              View Profile
+            </Button>
             <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Department
+                <Button className="bg-blue-400 hover:bg-blue-500 text-white px-6">
+                  Create New
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
@@ -109,84 +135,53 @@ const Departments = () => {
             </Dialog>
           </div>
 
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg">Search Departments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search departments..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+          {/* Table Section */}
+          <div className="bg-white rounded-lg shadow">
+            <div className="bg-blue-400 text-white p-4 rounded-t-lg">
+              <div className="grid grid-cols-4 gap-4">
+                <div className="font-medium">Department Name</div>
+                <div className="font-medium">Department Description</div>
+                <div className="font-medium">Management</div>
+                <div className="font-medium">Select</div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Departments List</CardTitle>
-            </CardHeader>
-            <CardContent>
+            </div>
+            
+            <div className="p-0">
               {isLoading ? (
                 <div className="text-center py-8">Loading departments...</div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Department Name</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Manager</TableHead>
-                      <TableHead>Manager Level</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredDepartments?.map((department) => (
-                      <TableRow key={department.id}>
-                        <TableCell className="font-medium">{department.name}</TableCell>
-                        <TableCell>{department.description}</TableCell>
-                        <TableCell>
-                          {department.manager ? (
-                            <div className="flex items-center gap-2">
-                              <img
-                                src={department.manager.profile_image_url || '/placeholder.svg'}
-                                alt={department.manager.name}
-                                className="w-8 h-8 rounded-full object-cover"
-                              />
-                              <span>{department.manager.name}</span>
-                            </div>
-                          ) : (
-                            'No manager assigned'
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {department.manager?.level && (
-                            <Badge variant="secondary">{department.manager.level}</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {department.manager && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewEmployee(department.manager.id)}
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Profile
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div className="divide-y">
+                  {filteredDepartments?.map((department, index) => (
+                    <div key={department.id} className={`grid grid-cols-4 gap-4 p-4 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                      <div className="font-medium text-gray-900">{department.name}</div>
+                      <div className="text-gray-600 text-sm">{department.description}</div>
+                      <div className="text-gray-600">Manager</div>
+                      <div>
+                        <div className="w-4 h-4 border-2 border-blue-400 rounded-full"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          {/* Pagination */}
+          <div className="mt-6 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious href="#" />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink href="#" isActive>1</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext href="#" />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         </div>
 
         <Dialog open={isProfileModalOpen} onOpenChange={setIsProfileModalOpen}>
