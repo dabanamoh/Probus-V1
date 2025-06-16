@@ -100,6 +100,47 @@ export type Database = {
           },
         ]
       }
+      resignations_terminations: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          request_date: string
+          request_type: string
+          status: string
+          updated_at: string
+          years_of_service: number
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          request_date?: string
+          request_type: string
+          status?: string
+          updated_at?: string
+          years_of_service?: number
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          request_date?: string
+          request_type?: string
+          status?: string
+          updated_at?: string
+          years_of_service?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resignations_terminations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
