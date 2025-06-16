@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { MessageSquare, Calendar, Bell, Search, Filter, CheckCircle, XCircle, Clock, BarChart3 } from 'lucide-react';
@@ -69,7 +68,7 @@ const Feedbacks = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const queryClient = useQueryClient();
 
-  // Fetch feedbacks
+  // Fetch feedbacks with proper employee relationship
   const { data: feedbacks = [], isLoading: feedbacksLoading } = useQuery({
     queryKey: ['feedbacks'],
     queryFn: async () => {
@@ -77,7 +76,7 @@ const Feedbacks = () => {
         .from('feedbacks')
         .select(`
           *,
-          employee:employees(
+          employee:employee_id(
             id,
             name,
             position,
@@ -92,21 +91,19 @@ const Feedbacks = () => {
       // Get department info for each employee
       const feedbacksWithDepartments = await Promise.all(
         data.map(async (feedback) => {
+          let department = null;
           if (feedback.employee?.department_id) {
-            const { data: department } = await supabase
+            const { data: dept } = await supabase
               .from('departments')
               .select('id, name')
               .eq('id', feedback.employee.department_id)
               .single();
-            
-            return {
-              ...feedback,
-              department
-            };
+            department = dept;
           }
+          
           return {
             ...feedback,
-            department: null
+            department
           };
         })
       );
@@ -115,7 +112,7 @@ const Feedbacks = () => {
     }
   });
 
-  // Fetch leave requests
+  // Fetch leave requests with proper employee relationship
   const { data: leaveRequests = [], isLoading: leavesLoading } = useQuery({
     queryKey: ['leave_requests'],
     queryFn: async () => {
@@ -123,7 +120,7 @@ const Feedbacks = () => {
         .from('leave_requests')
         .select(`
           *,
-          employee:employees(
+          employee:employee_id(
             id,
             name,
             position,
@@ -138,21 +135,19 @@ const Feedbacks = () => {
       // Get department info for each employee
       const leavesWithDepartments = await Promise.all(
         data.map(async (leave) => {
+          let department = null;
           if (leave.employee?.department_id) {
-            const { data: department } = await supabase
+            const { data: dept } = await supabase
               .from('departments')
               .select('id, name')
               .eq('id', leave.employee.department_id)
               .single();
-            
-            return {
-              ...leave,
-              department
-            };
+            department = dept;
           }
+          
           return {
             ...leave,
-            department: null
+            department
           };
         })
       );
@@ -178,7 +173,7 @@ const Feedbacks = () => {
 
       // Create notification for employee
       const leaveRequest = leaveRequests.find(l => l.id === id);
-      if (leaveRequest) {
+      if (leaveRequest && leaveRequest.employee) {
         await supabase.from('notifications').insert({
           recipient_id: leaveRequest.employee.id,
           type: 'leave_status',
@@ -225,6 +220,7 @@ const Feedbacks = () => {
   };
 
   const filteredFeedbacks = feedbacks.filter(feedback => {
+    if (!feedback.employee) return false;
     const matchesSearch = feedback.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          feedback.employee.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || feedback.status === statusFilter;
@@ -233,6 +229,7 @@ const Feedbacks = () => {
   });
 
   const filteredLeaves = leaveRequests.filter(leave => {
+    if (!leave.employee) return false;
     const matchesSearch = leave.employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          leave.leave_type.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || leave.status === statusFilter;
@@ -341,8 +338,8 @@ const Feedbacks = () => {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4 flex-1">
                           <img
-                            src={feedback.employee.profile_image_url || '/placeholder.svg'}
-                            alt={feedback.employee.name}
+                            src={feedback.employee?.profile_image_url || '/placeholder.svg'}
+                            alt={feedback.employee?.name || 'Employee'}
                             className="w-12 h-12 rounded-full object-cover"
                           />
                           <div className="flex-1">
@@ -353,7 +350,7 @@ const Feedbacks = () => {
                               </Badge>
                             </div>
                             <p className="text-sm text-gray-600 mb-2">
-                              From: {feedback.employee.name} • {feedback.department?.name || 'No Department'}
+                              From: {feedback.employee?.name || 'Unknown'} • {feedback.department?.name || 'No Department'}
                             </p>
                             <p className="text-sm text-gray-700 line-clamp-2">{feedback.message}</p>
                           </div>
@@ -381,25 +378,29 @@ const Feedbacks = () => {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4 flex-1">
                           <img
-                            src={leave.employee.profile_image_url || '/placeholder.svg'}
-                            alt={leave.employee.name}
+                            src={leave.employee?.profile_image_url || '/placeholder.svg'}
+                            alt={leave.employee?.name || 'Employee'}
                             className="w-12 h-12 rounded-full object-cover"
                           />
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="font-semibold text-gray-900 cursor-pointer hover:text-blue-600"
                                   onClick={() => {
-                                    setSelectedEmployee(leave.employee.id);
-                                    setShowChart(true);
+                                    if (leave.employee?.id) {
+                                      setSelectedEmployee(leave.employee.id);
+                                      setShowChart(true);
+                                    }
                                   }}>
-                                {leave.employee.name}
+                                {leave.employee?.name || 'Unknown'}
                               </h3>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => {
-                                  setSelectedEmployee(leave.employee.id);
-                                  setShowChart(true);
+                                  if (leave.employee?.id) {
+                                    setSelectedEmployee(leave.employee.id);
+                                    setShowChart(true);
+                                  }
                                 }}
                                 className="text-xs"
                               >
