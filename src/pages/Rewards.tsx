@@ -477,25 +477,29 @@ const Rewards = () => {
 
       {/* Incident Details Dialog */}
       <Dialog open={isIncidentDetailsOpen} onOpenChange={setIsIncidentDetailsOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto p-0">
+          <DialogHeader className="p-6 pb-0">
             <DialogTitle>Incident Report Details</DialogTitle>
           </DialogHeader>
-          {selectedIncident && (
-            <IncidentDetails incident={selectedIncident} />
-          )}
+          <div className="p-6">
+            {selectedIncident && (
+              <IncidentDetails incident={selectedIncident} />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Reward Details Dialog */}
       <Dialog open={isRewardDetailsOpen} onOpenChange={setIsRewardDetailsOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto p-0">
+          <DialogHeader className="p-6 pb-0">
             <DialogTitle>Reward Details</DialogTitle>
           </DialogHeader>
-          {selectedReward && (
-            <RewardDetails reward={selectedReward} />
-          )}
+          <div className="p-6">
+            {selectedReward && (
+              <RewardDetails reward={selectedReward} />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
