@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,7 +22,13 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import EmployeeProfile from '@/components/EmployeeProfile';
+import AddEmployeeForm from '@/components/AddEmployeeForm';
 
 interface Employee {
   id: string;
@@ -47,6 +52,7 @@ const Employees = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
 
   const { data: employees, isLoading } = useQuery({
     queryKey: ['employees', searchTerm, currentPage],
@@ -120,10 +126,17 @@ const Employees = () => {
                 />
               </div>
             </form>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Employee
-            </Button>
+            <Sheet open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
+              <SheetTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Employee
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[600px] sm:w-[800px] sm:max-w-[800px]">
+                <AddEmployeeForm onClose={() => setIsAddEmployeeOpen(false)} />
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
 
