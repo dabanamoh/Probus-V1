@@ -58,10 +58,21 @@ interface ResignationTermination {
   employee: Employee;
 }
 
+interface ResignationData {
+  id: string;
+  request_type: "resignation" | "termination";
+  years_of_service: number;
+  request_date: string;
+  status: "pending" | "valid" | "invalid";
+  description: string;
+  documents_url: string;
+  employee: Employee;
+}
+
 const Resignations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedResignation, setSelectedResignation] = useState<ResignationTermination | null>(null);
+  const [selectedResignation, setSelectedResignation] = useState<ResignationData | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
@@ -100,12 +111,19 @@ const Resignations = () => {
   });
 
   const transformedResignations = resignations.map((resignation): ResignationData => {
+    // Ensure status is properly typed
+    const normalizedStatus = resignation.status.toLowerCase();
+    const validStatus: "pending" | "valid" | "invalid" = 
+      normalizedStatus === 'pending' ? 'pending' :
+      normalizedStatus === 'valid' ? 'valid' :
+      normalizedStatus === 'invalid' ? 'invalid' : 'pending';
+
     return {
       id: resignation.id,
       request_type: resignation.request_type as "resignation" | "termination",
       years_of_service: resignation.years_of_service,
       request_date: resignation.request_date,
-      status: resignation.status as "pending" | "valid" | "invalid",
+      status: validStatus,
       description: resignation.description || '',
       documents_url: resignation.documents_url || '',
       employee: resignation.employee
@@ -149,20 +167,8 @@ const Resignations = () => {
     }
   };
 
-  const handleViewDetails = (resignation: ResignationTermination) => {
-    // Create a compatible object for ResignationDetails component
-    const detailsData = {
-      id: resignation.id,
-      request_type: resignation.request_type as "resignation" | "termination",
-      years_of_service: resignation.years_of_service,
-      request_date: resignation.request_date,
-      status: resignation.status as "pending" | "valid" | "invalid",
-      description: resignation.description || '', // Use the actual description or default to empty
-      documents_url: resignation.documents_url || '', // Use the actual documents_url or default to empty
-      employee: resignation.employee
-    };
-    
-    setSelectedResignation(detailsData as any);
+  const handleViewDetails = (resignation: ResignationData) => {
+    setSelectedResignation(resignation);
     setIsDetailsOpen(true);
   };
 
