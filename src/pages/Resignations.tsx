@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,7 +42,7 @@ interface Employee {
   department: {
     id: string;
     name: string;
-  };
+  } | null;
 }
 
 interface ResignationTermination {
@@ -92,7 +93,7 @@ const Resignations = () => {
             name,
             position,
             profile_image_url,
-            department:departments(
+            department:departments!employees_department_id_fkey(
               id,
               name
             )
@@ -131,7 +132,7 @@ const Resignations = () => {
   });
 
   const filteredResignations = transformedResignations.filter(resignation =>
-    resignation.employee?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    resignation.employee?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resignation.employee?.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resignation.employee?.department?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resignation.request_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -272,7 +273,7 @@ const Resignations = () => {
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    {resignation.employee?.department?.name}
+                    {resignation.employee?.department?.name || 'No Department'}
                   </TableCell>
                   <TableCell className="text-center">
                     {resignation.employee?.position}
@@ -365,7 +366,6 @@ const Resignations = () => {
             {selectedResignation && (
               <ResignationDetails 
                 resignation={selectedResignation}
-                onClose={() => setIsDetailsOpen(false)}
               />
             )}
           </DialogContent>

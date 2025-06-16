@@ -12,8 +12,8 @@ interface ResignationDetailsProps {
     years_of_service: number;
     request_date: string;
     status: 'pending' | 'valid' | 'invalid';
-    description: string | null;
-    documents_url: string | null;
+    description: string;
+    documents_url: string;
     employee: {
       id: string;
       name: string;
