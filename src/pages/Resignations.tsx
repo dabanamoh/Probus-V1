@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Sidebar from '@/components/Sidebar';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus, Eye, Check, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -21,16 +29,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { useToast } from '@/hooks/use-toast';
 import ResignationRequestForm from '@/components/ResignationRequestForm';
 import ResignationDetails from '@/components/ResignationDetails';
+import { Search } from 'lucide-react';
 
 interface Employee {
   id: string;
@@ -50,360 +51,245 @@ interface ResignationTermination {
   request_date: string;
   years_of_service: number;
   status: string;
-  description: string | null;
-  documents_url: string | null;
   created_at: string;
   updated_at: string;
   employee: Employee;
 }
 
-const ITEMS_PER_PAGE = 10;
-
 const Resignations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [isRequestFormOpen, setIsRequestFormOpen] = useState(false);
   const [selectedResignation, setSelectedResignation] = useState<ResignationTermination | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  
+  const ITEMS_PER_PAGE = 10;
 
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // Mock data - replace with actual Supabase query later
-  const mockResignations: ResignationTermination[] = [
-    {
-      id: '1',
-      employee_id: 'emp-1',
-      request_type: 'resignation',
-      request_date: '2024-01-15',
-      years_of_service: 3,
-      status: 'pending',
-      description: 'Personal reasons for career change',
-      documents_url: null,
-      created_at: '2024-01-15T10:30:00Z',
-      updated_at: '2024-01-15T10:30:00Z',
-      employee: {
-        id: 'emp-1',
-        name: 'John Doe',
-        position: 'Software Engineer',
-        profile_image_url: '/placeholder.svg',
-        department: {
-          id: 'dept-1',
-          name: 'Engineering'
-        }
-      }
-    },
-    {
-      id: '2',
-      employee_id: 'emp-2',
-      request_type: 'termination',
-      request_date: '2024-01-10',
-      years_of_service: 5,
-      status: 'valid',
-      description: 'Performance issues',
-      documents_url: '/termination_doc.pdf',
-      created_at: '2024-01-10T14:20:00Z',
-      updated_at: '2024-01-10T14:20:00Z',
-      employee: {
-        id: 'emp-2',
-        name: 'Jane Smith',
-        position: 'Project Manager',
-        profile_image_url: '/placeholder.svg',
-        department: {
-          id: 'dept-2',
-          name: 'Management'
-        }
-      }
-    },
-    {
-      id: '3',
-      employee_id: 'emp-3',
-      request_type: 'resignation',
-      request_date: '2024-01-05',
-      years_of_service: 1,
-      status: 'invalid',
-      description: 'Better opportunity elsewhere',
-      documents_url: null,
-      created_at: '2024-01-05T09:15:00Z',
-      updated_at: '2024-01-05T09:15:00Z',
-      employee: {
-        id: 'emp-3',
-        name: 'Alice Johnson',
-        position: 'Data Analyst',
-        profile_image_url: '/placeholder.svg',
-        department: {
-          id: 'dept-3',
-          name: 'Analytics'
-        }
-      }
-    },
-    {
-      id: '4',
-      employee_id: 'emp-4',
-      request_type: 'resignation',
-      request_date: '2023-12-28',
-      years_of_service: 2,
-      status: 'pending',
-      description: 'Relocation',
-      documents_url: null,
-      created_at: '2023-12-28T16:45:00Z',
-      updated_at: '2023-12-28T16:45:00Z',
-      employee: {
-        id: 'emp-4',
-        name: 'Bob Williams',
-        position: 'UX Designer',
-        profile_image_url: '/placeholder.svg',
-        department: {
-          id: 'dept-4',
-          name: 'Design'
-        }
-      }
-    },
-  ];
-
-  // Use mock data for now
-  const { data: resignations = [] } = useQuery({
+  const { data: resignations = [], isLoading, error } = useQuery({
     queryKey: ['resignations'],
     queryFn: async () => {
+      console.log('Fetching resignations...');
+      
       const { data, error } = await supabase
         .from('resignations_terminations')
         .select(`
           *,
-          description,
-          documents_url,
           employee:employees(
             id,
             name,
             position,
             profile_image_url,
-            department:departments(id, name)
+            department:departments(
+              id,
+              name
+            )
           )
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching resignations:', error);
+        throw error;
+      }
+
+      console.log('Fetched resignations:', data);
       return data as ResignationTermination[];
-    },
-    // For now, return mock data
-    enabled: false
+    }
   });
-  
-  // Filter resignations based on search term
-  const filteredResignations = mockResignations.filter(resignation =>
-    resignation.employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    resignation.request_type.toLowerCase().includes(searchTerm.toLowerCase())
+
+  const filteredResignations = resignations.filter(resignation =>
+    resignation.employee?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    resignation.employee?.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    resignation.employee?.department?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    resignation.request_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    resignation.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Paginate filtered results
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedResignations = filteredResignations.slice(startIndex, endIndex);
   const totalPages = Math.ceil(filteredResignations.length / ITEMS_PER_PAGE);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1);
-  };
-
-  const getStatusBadge = (status: string) => {
-    const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
-    switch (status) {
-      case 'valid':
-        return `${baseClasses} bg-green-100 text-green-800`;
-      case 'invalid':
-        return `${baseClasses} bg-red-100 text-red-800`;
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
       case 'pending':
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
+        return 'bg-yellow-100 text-yellow-800';
+      case 'valid':
+        return 'bg-green-100 text-green-800';
+      case 'invalid':
+        return 'bg-red-100 text-red-800';
       default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'valid':
-        return 'Valid';
-      case 'invalid':
-        return 'Invalid';
-      case 'pending':
-        return 'Pending';
+  const getRequestTypeColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'resignation':
+        return 'bg-blue-100 text-blue-800';
+      case 'termination':
+        return 'bg-red-100 text-red-800';
       default:
-        return status;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const handleStatusUpdate = async (id: string, newStatus: 'valid' | 'invalid') => {
-    try {
-      // TODO: Replace with actual Supabase mutation
-      toast({
-        title: "Status Updated",
-        description: `Request has been marked as ${newStatus}.`,
-      });
-      
-      // Close details if open
-      if (isDetailsOpen) {
-        setIsDetailsOpen(false);
-        setSelectedResignation(null);
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update status. Please try again.",
-        variant: "destructive",
-      });
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const handleViewDetails = (resignation: ResignationTermination) => {
-    setSelectedResignation(resignation);
+    // Create a compatible object for ResignationDetails component
+    const detailsData = {
+      id: resignation.id,
+      request_type: resignation.request_type as "resignation" | "termination",
+      years_of_service: resignation.years_of_service,
+      request_date: resignation.request_date,
+      status: resignation.status as "pending" | "valid" | "invalid",
+      description: '', // Default empty since not in database
+      documents_url: '', // Default empty since not in database
+      employee: resignation.employee
+    };
+    
+    setSelectedResignation(detailsData as any);
     setIsDetailsOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 w-full">
+        <Sidebar />
+        <div className="flex-1 p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-lg text-gray-600">Loading resignations...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 w-full">
+        <Sidebar />
+        <div className="flex-1 p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-lg text-red-600">Error loading resignations. Please try again.</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50 w-full">
       <Sidebar />
       <div className="flex-1 p-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Resignations & Terminations</h1>
-          <p className="text-gray-600">Manage employee resignation and termination requests</p>
-        </div>
-
-        {/* Search Bar and Create Button */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-          <div className="flex items-center justify-between gap-4">
-            <form onSubmit={handleSearch} className="flex-1 max-w-md">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search by employee name or request type..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </form>
-            
-            <Sheet open={isRequestFormOpen} onOpenChange={setIsRequestFormOpen}>
-              <SheetTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Request
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[600px] sm:w-[700px] sm:max-w-[700px]">
-                <SheetHeader>
-                  <SheetTitle>New Resignation/Termination Request</SheetTitle>
-                </SheetHeader>
-                <ResignationRequestForm onClose={() => setIsRequestFormOpen(false)} />
-              </SheetContent>
-            </Sheet>
+        <div className="mb-8 text-center">
+          <div className="inline-block bg-blue-400 text-white px-8 py-4 rounded-3xl mb-6">
+            <h1 className="text-2xl font-bold">Resignations/Terminations</h1>
           </div>
         </div>
 
+        {/* Search and Add Button */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 text-gray-400 transform -translate-y-1/2" />
+            <Input
+              placeholder="Search resignations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-white"
+            />
+          </div>
+          
+          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-400 hover:bg-blue-500 text-white">
+                Request Resignation/Termination
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>New Resignation/Termination Request</DialogTitle>
+              </DialogHeader>
+              <ResignationRequestForm onClose={() => setIsFormOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </div>
+
         {/* Resignations Table */}
-        <div className="bg-white rounded-lg shadow-sm border">
+        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead className="font-semibold text-gray-700">Employee</TableHead>
-                <TableHead className="font-semibold text-gray-700">Request Type</TableHead>
-                <TableHead className="font-semibold text-gray-700">Date</TableHead>
-                <TableHead className="font-semibold text-gray-700">Years of Service</TableHead>
-                <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                <TableHead className="font-semibold text-gray-700 text-center">Actions</TableHead>
+              <TableRow className="bg-blue-400">
+                <TableHead className="font-bold text-white text-center">Employee</TableHead>
+                <TableHead className="font-bold text-white text-center">Department</TableHead>
+                <TableHead className="font-bold text-white text-center">Position</TableHead>
+                <TableHead className="font-bold text-white text-center">Request Type</TableHead>
+                <TableHead className="font-bold text-white text-center">Request Date</TableHead>
+                <TableHead className="font-bold text-white text-center">Years of Service</TableHead>
+                <TableHead className="font-bold text-white text-center">Status</TableHead>
+                <TableHead className="font-bold text-white text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedResignations.length > 0 ? (
-                paginatedResignations.map((resignation, index) => (
-                  <TableRow 
-                    key={resignation.id} 
-                    className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={resignation.employee.profile_image_url || '/placeholder.svg'}
-                          alt={resignation.employee.name}
-                          className="w-10 h-10 rounded-full object-cover"
+              {paginatedResignations.map((resignation, index) => (
+                <TableRow 
+                  key={resignation.id} 
+                  className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                >
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage 
+                          src={resignation.employee?.profile_image_url} 
+                          alt={resignation.employee?.name} 
                         />
-                        <div>
-                          <div className="font-medium text-gray-900">{resignation.employee.name}</div>
-                          <div className="text-sm text-gray-500">
-                            {resignation.employee.position} • {resignation.employee.department.name}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-700 capitalize">
+                        <AvatarFallback>
+                          {resignation.employee?.name?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium">{resignation.employee?.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {resignation.employee?.department?.name}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {resignation.employee?.position}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge className={`${getRequestTypeColor(resignation.request_type)} border-0`}>
                       {resignation.request_type}
-                    </TableCell>
-                    <TableCell className="text-gray-700">
-                      {formatDate(resignation.request_date)}
-                    </TableCell>
-                    <TableCell className="text-gray-700">
-                      {resignation.years_of_service} years
-                    </TableCell>
-                    <TableCell>
-                      <span className={getStatusBadge(resignation.status)}>
-                        {getStatusLabel(resignation.status)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleViewDetails(resignation)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {resignation.status === 'pending' && (
-                          <>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-green-600 hover:text-green-700"
-                              onClick={() => handleStatusUpdate(resignation.id, 'valid')}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-red-600 hover:text-red-700"
-                              onClick={() => handleStatusUpdate(resignation.id, 'invalid')}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                    No resignation/termination requests found
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {new Date(resignation.request_date).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {resignation.years_of_service} years
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge className={`${getStatusColor(resignation.status)} border-0`}>
+                      {resignation.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleViewDetails(resignation)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      View Details
+                    </Button>
                   </TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="p-4 border-t">
+            <div className="p-4 border-t bg-gray-50">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
@@ -426,6 +312,7 @@ const Resignations = () => {
                           setCurrentPage(page);
                         }}
                         isActive={currentPage === page}
+                        className={currentPage === page ? 'bg-blue-400 text-white' : ''}
                       >
                         {page}
                       </PaginationLink>
@@ -448,21 +335,20 @@ const Resignations = () => {
           )}
         </div>
 
-        {/* Details Sheet */}
-        <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-          <SheetContent side="right" className="w-[600px] sm:w-[700px] sm:max-w-[700px]">
-            <SheetHeader>
-              <SheetTitle>Request Details</SheetTitle>
-            </SheetHeader>
+        {/* Resignation Details Dialog */}
+        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Resignation/Termination Details</DialogTitle>
+            </DialogHeader>
             {selectedResignation && (
               <ResignationDetails 
                 resignation={selectedResignation}
-                onStatusUpdate={handleStatusUpdate}
                 onClose={() => setIsDetailsOpen(false)}
               />
             )}
-          </SheetContent>
-        </Sheet>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
