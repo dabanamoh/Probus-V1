@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { cn } from "@/lib/utils";
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Building2, 
   Users, 
@@ -18,13 +19,16 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ className }: SidebarProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const menuItems = [
-    { icon: Building2, label: "Departments", active: false },
-    { icon: Users, label: "Employees", active: false },
-    { icon: UserX, label: "Resignations/Terminations", active: false },
-    { icon: Award, label: "Rewards / Punishment", active: false },
-    { icon: BarChart3, label: "KPI", active: false },
-    { icon: MessageSquare, label: "Feedbacks", active: false },
+    { icon: Building2, label: "Departments", path: "/departments", active: location.pathname === "/departments" },
+    { icon: Users, label: "Employees", path: "/employees", active: location.pathname === "/employees" },
+    { icon: UserX, label: "Resignations/Terminations", path: "/resignations", active: location.pathname === "/resignations" },
+    { icon: Award, label: "Rewards / Punishment", path: "/rewards", active: location.pathname === "/rewards" },
+    { icon: BarChart3, label: "KPI", path: "/kpi", active: location.pathname === "/kpi" },
+    { icon: MessageSquare, label: "Feedbacks", path: "/feedbacks", active: location.pathname === "/feedbacks" },
   ];
 
   return (
@@ -34,7 +38,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     )}>
       {/* Logo and Brand */}
       <div className="p-6 border-b border-blue-500 border-opacity-30">
-        <div className="flex items-center space-x-3 mb-2">
+        <div className="flex items-center space-x-3 mb-2 cursor-pointer" onClick={() => navigate('/')}>
           <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
             <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
               <Building2 className="w-5 h-5 text-blue-600" />
@@ -52,16 +56,16 @@ const Sidebar = ({ className }: SidebarProps) => {
         <ul className="space-y-2 px-4">
           {menuItems.map((item, index) => (
             <li key={index}>
-              <a
-                href="#"
+              <button
+                onClick={() => navigate(item.path)}
                 className={cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-white hover:bg-opacity-20 hover:translate-x-1",
+                  "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-white hover:bg-opacity-20 hover:translate-x-1 text-left",
                   item.active && "bg-white bg-opacity-20"
                 )}
               >
                 <item.icon className="w-5 h-5" />
                 <span className="text-sm font-medium">{item.label}</span>
-              </a>
+              </button>
             </li>
           ))}
         </ul>

@@ -9,7 +9,97 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      departments: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          manager_id: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          manager_id?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          manager_id?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_departments_manager"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          certifications: string | null
+          created_at: string
+          date_of_birth: string | null
+          date_of_resumption: string | null
+          department_id: string | null
+          id: string
+          job_description: string | null
+          level: string | null
+          name: string
+          position: string | null
+          profile_image_url: string | null
+          qualification: string | null
+          updated_at: string
+        }
+        Insert: {
+          certifications?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          date_of_resumption?: string | null
+          department_id?: string | null
+          id?: string
+          job_description?: string | null
+          level?: string | null
+          name: string
+          position?: string | null
+          profile_image_url?: string | null
+          qualification?: string | null
+          updated_at?: string
+        }
+        Update: {
+          certifications?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          date_of_resumption?: string | null
+          department_id?: string | null
+          id?: string
+          job_description?: string | null
+          level?: string | null
+          name?: string
+          position?: string | null
+          profile_image_url?: string | null
+          qualification?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
