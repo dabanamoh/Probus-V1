@@ -16,7 +16,10 @@ const LeaveChart = ({ employeeId }: LeaveChartProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('employees')
-        .select('*')
+        .select(`
+          *,
+          department:departments(id, name)
+        `)
         .eq('id', employeeId)
         .single();
       
@@ -98,7 +101,7 @@ const LeaveChart = ({ employeeId }: LeaveChartProps) => {
       {employee && (
         <div className="text-center pb-4 border-b">
           <h3 className="text-xl font-semibold">{employee.name}</h3>
-          <p className="text-gray-600">{employee.position} • {employee.department?.name}</p>
+          <p className="text-gray-600">{employee.position} • {employee.department?.name || 'No Department'}</p>
         </div>
       )}
 

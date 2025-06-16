@@ -22,10 +22,12 @@ interface Employee {
   name: string;
   position: string | null;
   profile_image_url: string | null;
-  department: {
-    id: string;
-    name: string;
-  } | null;
+  department_id: string | null;
+}
+
+interface Department {
+  id: string;
+  name: string;
 }
 
 interface Feedback {
@@ -37,6 +39,7 @@ interface Feedback {
   priority: string;
   created_at: string;
   employee: Employee;
+  department: Department | null;
 }
 
 interface LeaveRequest {
@@ -52,6 +55,7 @@ interface LeaveRequest {
   admin_notes: string | null;
   created_at: string;
   employee: Employee;
+  department: Department | null;
 }
 
 const Feedbacks = () => {
@@ -78,13 +82,36 @@ const Feedbacks = () => {
             name,
             position,
             profile_image_url,
-            department:departments(id, name)
+            department_id
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Get department info for each employee
+      const feedbacksWithDepartments = await Promise.all(
+        data.map(async (feedback) => {
+          if (feedback.employee?.department_id) {
+            const { data: department } = await supabase
+              .from('departments')
+              .select('id, name')
+              .eq('id', feedback.employee.department_id)
+              .single();
+            
+            return {
+              ...feedback,
+              department
+            };
+          }
+          return {
+            ...feedback,
+            department: null
+          };
+        })
+      );
+      
+      return feedbacksWithDepartments;
     }
   });
 
@@ -101,13 +128,36 @@ const Feedbacks = () => {
             name,
             position,
             profile_image_url,
-            department:departments(id, name)
+            department_id
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Get department info for each employee
+      const leavesWithDepartments = await Promise.all(
+        data.map(async (leave) => {
+          if (leave.employee?.department_id) {
+            const { data: department } = await supabase
+              .from('departments')
+              .select('id, name')
+              .eq('id', leave.employee.department_id)
+              .single();
+            
+            return {
+              ...leave,
+              department
+            };
+          }
+          return {
+            ...leave,
+            department: null
+          };
+        })
+      );
+      
+      return leavesWithDepartments;
     }
   });
 
@@ -303,7 +353,7 @@ const Feedbacks = () => {
                               </Badge>
                             </div>
                             <p className="text-sm text-gray-600 mb-2">
-                              From: {feedback.employee.name} • {feedback.employee.department?.name}
+                              From: {feedback.employee.name} • {feedback.department?.name || 'No Department'}
                             </p>
                             <p className="text-sm text-gray-700 line-clamp-2">{feedback.message}</p>
                           </div>

@@ -16,10 +16,12 @@ interface Employee {
   name: string;
   position: string | null;
   profile_image_url: string | null;
-  department: {
-    id: string;
-    name: string;
-  } | null;
+  department_id: string | null;
+}
+
+interface Department {
+  id: string;
+  name: string;
 }
 
 interface Feedback {
@@ -31,6 +33,7 @@ interface Feedback {
   priority: string;
   created_at: string;
   employee: Employee;
+  department: Department | null;
 }
 
 interface FeedbackDetailsProps {
@@ -139,7 +142,7 @@ const FeedbackDetails = ({ feedback }: FeedbackDetailsProps) => {
             <h2 className="text-xl font-bold text-gray-900">{feedback.employee.name}</h2>
             <p className="text-gray-700">{feedback.employee.position || 'No Position'}</p>
             <p className="text-sm text-gray-600">
-              <strong>Department:</strong> {feedback.employee.department?.name || 'No Department'}
+              <strong>Department:</strong> {feedback.department?.name || 'No Department'}
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
