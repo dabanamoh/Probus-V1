@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Sidebar from '@/components/Sidebar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Plus, Eye, Edit } from 'lucide-react';
-import { Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -28,21 +27,9 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import EmployeeProfile from '@/components/EmployeeProfile';
 import AddEmployeeForm from '@/components/AddEmployeeForm';
 import EditEmployeeForm from '@/components/EditEmployeeForm';
-import { useToast } from '@/hooks/use-toast';
 
 interface Employee {
   id: string;
@@ -71,9 +58,6 @@ const Employees = () => {
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
   const [isEditEmployeeOpen, setIsEditEmployeeOpen] = useState(false);
 
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
   const { data: employees, isLoading } = useQuery({
     queryKey: ['employees', searchTerm, currentPage],
     queryFn: async () => {
@@ -84,7 +68,7 @@ const Employees = () => {
         .from('employees')
         .select(`
           *,
-          department:departments(name)
+          department:departments!employees_department_id_fkey(name)
         `)
         .range(startIndex, endIndex);
 
@@ -115,33 +99,6 @@ const Employees = () => {
     },
   });
 
-  const deleteEmployeeMutation = useMutation({
-    mutationFn: async (employeeId: string) => {
-      const { error } = await supabase
-        .from('employees')
-        .delete()
-        .eq('id', employeeId);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      queryClient.invalidateQueries({ queryKey: ['employees-count'] });
-      toast({
-        title: "Success",
-        description: "Employee deleted successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to delete employee",
-        variant: "destructive",
-      });
-      console.error('Error deleting employee:', error);
-    },
-  });
-
   const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -152,10 +109,6 @@ const Employees = () => {
   const handleEditEmployee = (employee: Employee) => {
     setEditingEmployee(employee);
     setIsEditEmployeeOpen(true);
-  };
-
-  const handleDeleteEmployee = (employeeId: string) => {
-    deleteEmployeeMutation.mutate(employeeId);
   };
 
   return (
@@ -269,36 +222,6 @@ const Employees = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Employee</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete {employee.name}? This action cannot be undone and will permanently remove all employee data.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteEmployee(employee.id)}
-                                className="bg-red-600 hover:bg-red-700"
-                                disabled={deleteEmployeeMutation.isPending}
-                              >
-                                {deleteEmployeeMutation.isPending ? 'Deleting...' : 'Delete'}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>
