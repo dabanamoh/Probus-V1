@@ -100,6 +100,50 @@ export type Database = {
           },
         ]
       }
+      feedbacks: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          message: string
+          priority: string
+          status: string
+          subject: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          message: string
+          priority?: string
+          status?: string
+          subject: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          message?: string
+          priority?: string
+          status?: string
+          subject?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedbacks_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incidents: {
         Row: {
           created_at: string
@@ -148,6 +192,120 @@ export type Database = {
           {
             foreignKeyName: "incidents_reporter_id_fkey"
             columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          days_requested: number
+          employee_id: string
+          end_date: string
+          id: string
+          leave_type: string
+          reason: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          days_requested: number
+          employee_id: string
+          end_date: string
+          id?: string
+          leave_type: string
+          reason: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          days_requested?: number
+          employee_id?: string
+          end_date?: string
+          id?: string
+          leave_type?: string
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          recipient_id: string
+          sender_id: string | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          recipient_id: string
+          sender_id?: string | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          recipient_id?: string
+          sender_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_sender_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "employees"
             referencedColumns: ["id"]

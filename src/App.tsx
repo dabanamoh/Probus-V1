@@ -10,6 +10,7 @@ import Employees from "./pages/Employees";
 import Resignations from "./pages/Resignations";
 import Rewards from "./pages/Rewards";
 import KPI from "./pages/KPI";
+import Feedbacks from "./pages/Feedbacks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/resignations" element={<Resignations />} />
             <Route path="/rewards" element={<Rewards />} />
             <Route path="/kpi" element={<KPI />} />
+            <Route path="/feedbacks" element={<Feedbacks />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
