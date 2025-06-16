@@ -100,6 +100,60 @@ export type Database = {
           },
         ]
       }
+      incidents: {
+        Row: {
+          created_at: string
+          date_reported: string
+          department_id: string | null
+          description: string
+          id: string
+          incident_type: string
+          location: string | null
+          reporter_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_reported?: string
+          department_id?: string | null
+          description: string
+          id?: string
+          incident_type?: string
+          location?: string | null
+          reporter_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_reported?: string
+          department_id?: string | null
+          description?: string
+          id?: string
+          incident_type?: string
+          location?: string | null
+          reporter_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resignations_terminations: {
         Row: {
           created_at: string
@@ -137,6 +191,66 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards_punishments: {
+        Row: {
+          amount: number | null
+          awarded_by: string | null
+          category: string
+          created_at: string
+          date_awarded: string
+          description: string
+          employee_id: string
+          id: string
+          incident_id: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          awarded_by?: string | null
+          category: string
+          created_at?: string
+          date_awarded?: string
+          description: string
+          employee_id: string
+          id?: string
+          incident_id?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          awarded_by?: string | null
+          category?: string
+          created_at?: string
+          date_awarded?: string
+          description?: string
+          employee_id?: string
+          id?: string
+          incident_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rewards_punishments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rewards_punishments_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
             referencedColumns: ["id"]
           },
         ]
