@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Sidebar from '@/components/Sidebar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Eye, FileText, Upload, Check, X } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -29,13 +29,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogHeader,
+} from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { useToast } from '@/hooks/use-toast';
+import ResignationRequestForm from '@/components/ResignationRequestForm';
+import ResignationDetails from '@/components/ResignationDetails';
+import EmployeeProfile from '@/components/EmployeeProfile';
 
 interface ResignationTermination {
   id: string;
   request_type: 'resignation' | 'termination';
   years_of_service: number;
   request_date: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'valid' | 'invalid';
+  description: string | null;
+  documents_url: string | null;
   employee: {
     id: string;
     name: string;
@@ -53,6 +73,12 @@ const Resignations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedResignation, setSelectedResignation] = useState<ResignationTermination | null>(null);
+  const [isRequestFormOpen, setIsRequestFormOpen] = useState(false);
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: resignations, isLoading } = useQuery({
     queryKey: ['resignations', searchTerm, currentPage, statusFilter],
@@ -75,10 +101,6 @@ const Resignations = () => {
         .range(startIndex, endIndex)
         .order('created_at', { ascending: false });
 
-      if (searchTerm) {
-        // We need to filter by employee name, but since it's a join, we'll do client-side filtering
-      }
-
       if (statusFilter && statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
       }
@@ -86,7 +108,6 @@ const Resignations = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Client-side filtering for employee name if search term exists
       let filteredData = data as ResignationTermination[];
       if (searchTerm) {
         filteredData = filteredData.filter(item => 
@@ -103,7 +124,7 @@ const Resignations = () => {
     queryFn: async () => {
       let query = supabase
         .from('resignations_terminations')
-        .select('*, employee:employees(name)', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true });
 
       if (statusFilter && statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
@@ -112,6 +133,31 @@ const Resignations = () => {
       const { count, error } = await query;
       if (error) throw error;
       return count || 0;
+    },
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: 'valid' | 'invalid' }) => {
+      const { error } = await supabase
+        .from('resignations_terminations')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resignations'] });
+      toast({
+        title: "Status Updated",
+        description: "Resignation status has been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update resignation status.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -127,9 +173,9 @@ const Resignations = () => {
     switch (status) {
       case 'pending':
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
-      case 'accepted':
+      case 'valid':
         return `${baseClasses} bg-green-100 text-green-800`;
-      case 'rejected':
+      case 'invalid':
         return `${baseClasses} bg-red-100 text-red-800`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
@@ -177,15 +223,25 @@ const Resignations = () => {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="accepted">Accepted</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="valid">Valid</SelectItem>
+                  <SelectItem value="invalid">Invalid</SelectItem>
                 </SelectContent>
               </Select>
               
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Request
-              </Button>
+              <Sheet open={isRequestFormOpen} onOpenChange={setIsRequestFormOpen}>
+                <SheetTrigger asChild>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Request
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[600px] sm:w-[800px] sm:max-w-[800px]">
+                  <SheetHeader>
+                    <SheetTitle>Create New Resignation/Termination Request</SheetTitle>
+                  </SheetHeader>
+                  <ResignationRequestForm onClose={() => setIsRequestFormOpen(false)} />
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>
@@ -201,12 +257,13 @@ const Resignations = () => {
                 <TableHead className="font-semibold text-gray-700">Years of Service</TableHead>
                 <TableHead className="font-semibold text-gray-700">Request Date</TableHead>
                 <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                <TableHead className="font-semibold text-gray-700 text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     Loading resignations/terminations...
                   </TableCell>
                 </TableRow>
@@ -252,11 +309,77 @@ const Resignations = () => {
                         {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                       </span>
                     </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedEmployee(item.employee)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Employee Profile</DialogTitle>
+                            </DialogHeader>
+                            {selectedEmployee && (
+                              <EmployeeProfile employee={selectedEmployee} />
+                            )}
+                          </DialogContent>
+                        </Dialog>
+
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedResignation(item)}
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Request Details</DialogTitle>
+                            </DialogHeader>
+                            {selectedResignation && (
+                              <ResignationDetails resignation={selectedResignation} />
+                            )}
+                          </DialogContent>
+                        </Dialog>
+
+                        {item.status === 'pending' && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => updateStatusMutation.mutate({ id: item.id, status: 'valid' })}
+                              className="text-green-600 hover:text-green-700"
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => updateStatusMutation.mutate({ id: item.id, status: 'invalid' })}
+                              className="text-red-600 hover:text-red-700"
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     No resignation/termination requests found
                   </TableCell>
                 </TableRow>
