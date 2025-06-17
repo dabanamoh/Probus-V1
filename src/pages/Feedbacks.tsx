@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Sidebar from '@/components/Sidebar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus, Eye, Filter, Users, MessageSquare, Calendar, TrendingUp } from 'lucide-react';
+import { Search, Plus, Eye, MessageSquare, Calendar, Users, AlertTriangle } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -14,19 +13,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
 import FeedbackDetails from '@/components/FeedbackDetails';
 import LeaveRequestDetails from '@/components/LeaveRequestDetails';
-import { toast } from 'sonner';
+import IncidentDetails from '@/components/IncidentDetails';
+import { useToast } from '@/hooks/use-toast';
 
 interface Employee {
   id: string;
@@ -51,179 +49,212 @@ interface Feedback {
   created_at: string;
   employee_id: string;
   employee: Employee;
+  department?: Department; // Make this optional
 }
 
 interface LeaveRequest {
   id: string;
   employee_id: string;
+  leave_type: string;
   start_date: string;
   end_date: string;
-  leave_type: string;
+  days_requested: number;
   reason: string;
   status: string;
-  days_requested: number;
   created_at: string;
+  admin_notes: string | null;
   reviewed_at: string | null;
   reviewed_by: string | null;
-  admin_notes: string | null;
-  updated_at: string;
   employee: Employee;
   department: Department;
 }
 
+interface Incident {
+  id: string;
+  incident_type: string;
+  description: string;
+  status: string;
+  date_reported: string;
+  location: string | null;
+  created_at: string;
+  reporter_id: string;
+  department_id: string | null;
+  employee: Employee;
+  department: Department | null;
+}
+
 const Feedbacks = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
   const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null);
-  const [activeTab, setActiveTab] = useState<'feedbacks' | 'leaves'>('feedbacks');
-
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch feedbacks with proper employee relationship
+  // Queries for fetching data
   const { data: feedbacks, isLoading: feedbacksLoading } = useQuery({
-    queryKey: ['feedbacks', searchTerm, statusFilter, typeFilter],
+    queryKey: ['feedbacks', searchTerm],
     queryFn: async () => {
       let query = supabase
         .from('feedbacks')
         .select(`
           *,
-          employee:employee_id(id, name, position, profile_image_url, department_id)
+          employee:employees!feedbacks_employee_id_fkey(
+            id,
+            name,
+            position,
+            profile_image_url,
+            department_id,
+            department:departments!employees_department_id_fkey(
+              id,
+              name
+            )
+          )
         `);
 
       if (searchTerm) {
         query = query.or(`subject.ilike.%${searchTerm}%,message.ilike.%${searchTerm}%`);
       }
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      if (typeFilter !== 'all') {
-        query = query.eq('type', typeFilter);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query;
       if (error) throw error;
       
-      // Filter out any feedbacks where employee data failed to load
-      return (data || []).filter(feedback => 
-        feedback.employee && 
-        typeof feedback.employee === 'object' && 
-        'id' in feedback.employee
-      ) as Feedback[];
+      return data?.map(feedback => ({
+        ...feedback,
+        department: feedback.employee?.department || undefined
+      })) as Feedback[];
     },
   });
 
-  // Fetch leave requests with proper relationships
-  const { data: leaveRequests, isLoading: leavesLoading } = useQuery({
-    queryKey: ['leave-requests'],
+  const { data: leaveRequests, isLoading: leaveRequestsLoading } = useQuery({
+    queryKey: ['leave-requests', searchTerm],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('leave_requests')
         .select(`
           *,
-          employee:employees!leave_requests_employee_id_fkey(id, name, position, profile_image_url, department_id),
-          department:employees!leave_requests_employee_id_fkey(departments!employees_department_id_fkey(id, name))
-        `)
-        .order('created_at', { ascending: false });
+          employee:employees!leave_requests_employee_id_fkey(
+            id,
+            name,
+            position,
+            profile_image_url,
+            department_id
+          ),
+          department:departments!inner(
+            id,
+            name
+          )
+        `);
 
+      if (searchTerm) {
+        query = query.or(`reason.ilike.%${searchTerm}%,leave_type.ilike.%${searchTerm}%`);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       
-      // Transform and filter the data properly
-      const validRequests = (data || []).filter(request => 
-        request.employee && 
-        typeof request.employee === 'object' && 
-        'id' in request.employee
-      ).map(request => ({
-        ...request,
-        department: request.department?.departments || { id: '', name: 'No Department' },
-        employee: request.employee as Employee
-      }));
-
-      return validRequests as LeaveRequest[];
+      return data?.filter(request => request.employee) as LeaveRequest[];
     },
   });
 
-  // Update leave request status mutation
+  const { data: incidents, isLoading: incidentsLoading } = useQuery({
+    queryKey: ['incidents', searchTerm],
+    queryFn: async () => {
+      let query = supabase
+        .from('incidents')
+        .select(`
+          *,
+          employee:employees!incidents_reporter_id_fkey(
+            id,
+            name,
+            position,
+            profile_image_url,
+            department_id
+          ),
+          department:departments(
+            id,
+            name
+          )
+        `);
+
+      if (searchTerm) {
+        query = query.or(`description.ilike.%${searchTerm}%,incident_type.ilike.%${searchTerm}%`);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      return data as Incident[];
+    },
+  });
+
   const updateLeaveRequestMutation = useMutation({
-    mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
+    mutationFn: async ({ id, status, adminNotes }: { id: string; status: string; adminNotes?: string }) => {
       const { data, error } = await supabase
         .from('leave_requests')
         .update({
           status,
-          admin_notes: notes || null,
+          admin_notes: adminNotes || null,
           reviewed_at: new Date().toISOString(),
           reviewed_by: 'admin' // This should be the actual admin user ID in a real app
         })
         .eq('id', id)
-        .select()
-        .single();
-
+        .select();
+      
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
-      toast.success('Leave request updated successfully');
+      toast({
+        title: "Success",
+        description: "Leave request updated successfully",
+      });
     },
     onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update leave request",
+        variant: "destructive",
+      });
       console.error('Error updating leave request:', error);
-      toast.error('Failed to update leave request');
     },
   });
 
-  // Fetch departments for filtering
-  const { data: departments } = useQuery({
-    queryKey: ['departments'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('departments')
-        .select('id, name');
-      if (error) throw error;
-      return data as Department[];
-    },
-  });
-
-  // Calculate statistics
-  const feedbackStats = {
-    total: feedbacks?.length || 0,
-    pending: feedbacks?.filter(f => f.status === 'pending').length || 0,
-    resolved: feedbacks?.filter(f => f.status === 'resolved').length || 0,
-    highPriority: feedbacks?.filter(f => f.priority === 'high').length || 0,
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
   };
 
-  const leaveStats = {
-    total: leaveRequests?.length || 0,
-    pending: leaveRequests?.filter(l => l.status === 'pending').length || 0,
-    approved: leaveRequests?.filter(l => l.status === 'approved').length || 0,
-    rejected: leaveRequests?.filter(l => l.status === 'rejected').length || 0,
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'resolved': return 'bg-green-100 text-green-800';
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const getBadgeVariant = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'secondary';
+      case 'approved':
+        return 'default';
+      case 'rejected':
+        return 'destructive';
+      case 'resolved':
+        return 'default';
+      default:
+        return 'secondary';
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
-  const handleStatusUpdate = (data: { id: string; status: string; notes?: string }) => {
-    updateLeaveRequestMutation.mutate(data);
-  };
+  const totalFeedbacks = feedbacks?.length || 0;
+  const totalLeaveRequests = leaveRequests?.length || 0;
+  const totalIncidents = incidents?.length || 0;
+
+  const pendingFeedbacks = feedbacks?.filter(f => f.status === 'pending').length || 0;
+  const pendingLeaveRequests = leaveRequests?.filter(lr => lr.status === 'pending').length || 0;
+  const pendingIncidents = incidents?.filter(i => i.status === 'pending').length || 0;
 
   return (
     <div className="flex min-h-screen bg-gray-50 w-full">
@@ -231,365 +262,349 @@ const Feedbacks = () => {
       <div className="flex-1 p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Employee Feedback & Leave Management
-          </h1>
-          <p className="text-gray-600">Manage employee feedback and leave requests</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Employee Communications</h1>
+          <p className="text-gray-600">Manage feedback, leave requests, and incidents</p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setActiveTab('feedbacks')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'feedbacks'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <MessageSquare className="h-4 w-4 inline mr-2" />
-                Feedbacks
-              </button>
-              <button
-                onClick={() => setActiveTab('leaves')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'leaves'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <Calendar className="h-4 w-4 inline mr-2" />
-                Leave Requests
-              </button>
-            </nav>
-          </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Feedback</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalFeedbacks}</div>
+              <p className="text-xs text-muted-foreground">
+                {pendingFeedbacks} pending
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Leave Requests</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalLeaveRequests}</div>
+              <p className="text-xs text-muted-foreground">
+                {pendingLeaveRequests} pending
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Incidents</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalIncidents}</div>
+              <p className="text-xs text-muted-foreground">
+                {pendingIncidents} pending
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          {activeTab === 'feedbacks' ? (
-            <>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Feedbacks</CardTitle>
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{feedbackStats.total}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{feedbackStats.pending}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Resolved</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{feedbackStats.resolved}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">High Priority</CardTitle>
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{feedbackStats.highPriority}</div>
-                </CardContent>
-              </Card>
-            </>
-          ) : (
-            <>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{leaveStats.total}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{leaveStats.pending}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Approved</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{leaveStats.approved}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Rejected</CardTitle>
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{leaveStats.rejected}</div>
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </div>
-
-        {/* Search and Filters */}
+        {/* Search Bar */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1 max-w-md">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder={`Search ${activeTab}...`}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          <form onSubmit={handleSearch} className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search communications..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            
-            {activeTab === 'feedbacks' && (
-              <div className="flex gap-4">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="general">General</SelectItem>
-                    <SelectItem value="complaint">Complaint</SelectItem>
-                    <SelectItem value="suggestion">Suggestion</SelectItem>
-                    <SelectItem value="performance">Performance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </div>
+          </form>
         </div>
 
-        {/* Content Table */}
+        {/* Feedback Section */}
+        <div className="bg-white rounded-lg shadow-sm border mb-6">
+          <div className="p-6 border-b">
+            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Feedback
+            </h2>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-semibold text-gray-700">Employee</TableHead>
+                <TableHead className="font-semibold text-gray-700">Subject</TableHead>
+                <TableHead className="font-semibold text-gray-700">Type</TableHead>
+                <TableHead className="font-semibold text-gray-700">Priority</TableHead>
+                <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                <TableHead className="font-semibold text-gray-700">Date</TableHead>
+                <TableHead className="font-semibold text-gray-700 text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {feedbacksLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    Loading feedback...
+                  </TableCell>
+                </TableRow>
+              ) : feedbacks && feedbacks.length > 0 ? (
+                feedbacks.map((feedback) => (
+                  <TableRow key={feedback.id}>
+                    <TableCell>
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={feedback.employee?.profile_image_url || '/placeholder.svg'}
+                          alt={feedback.employee?.name || 'Employee'}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {feedback.employee?.name || 'Unknown Employee'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {feedback.employee?.position || 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-gray-700">{feedback.subject}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{feedback.type}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={feedback.priority === 'high' ? 'destructive' : 'secondary'}>
+                        {feedback.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getBadgeVariant(feedback.status)}>
+                        {feedback.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-gray-700">
+                      {formatDate(feedback.created_at)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedFeedback(feedback)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                          <DialogTitle>Feedback Details</DialogTitle>
+                          {selectedFeedback && (
+                            <FeedbackDetails feedback={selectedFeedback} />
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                    No feedback found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Leave Requests Section */}
+        <div className="bg-white rounded-lg shadow-sm border mb-6">
+          <div className="p-6 border-b">
+            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Leave Requests
+            </h2>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-semibold text-gray-700">Employee</TableHead>
+                <TableHead className="font-semibold text-gray-700">Leave Type</TableHead>
+                <TableHead className="font-semibold text-gray-700">Duration</TableHead>
+                <TableHead className="font-semibold text-gray-700">Start Date</TableHead>
+                <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                <TableHead className="font-semibold text-gray-700 text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {leaveRequestsLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    Loading leave requests...
+                  </TableCell>
+                </TableRow>
+              ) : leaveRequests && leaveRequests.length > 0 ? (
+                leaveRequests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell>
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={request.employee?.profile_image_url || '/placeholder.svg'}
+                          alt={request.employee?.name || 'Employee'}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {request.employee?.name || 'Unknown Employee'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {request.employee?.position || 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{request.leave_type}</Badge>
+                    </TableCell>
+                    <TableCell className="text-gray-700">
+                      {request.days_requested} days
+                    </TableCell>
+                    <TableCell className="text-gray-700">
+                      {formatDate(request.start_date)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getBadgeVariant(request.status)}>
+                        {request.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedLeaveRequest(request)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                          <DialogTitle>Leave Request Details</DialogTitle>
+                          {selectedLeaveRequest && (
+                            <LeaveRequestDetails 
+                              leaveRequest={selectedLeaveRequest}
+                              onStatusUpdate={(id, status, adminNotes) => 
+                                updateLeaveRequestMutation.mutate({ id, status, adminNotes })
+                              }
+                              isUpdating={updateLeaveRequestMutation.isPending}
+                            />
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                    No leave requests found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Incidents Section */}
         <div className="bg-white rounded-lg shadow-sm border">
-          {activeTab === 'feedbacks' ? (
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50">
-                  <TableHead className="font-semibold text-gray-700">Employee</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Subject</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Type</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Priority</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Date</TableHead>
-                  <TableHead className="font-semibold text-gray-700 text-center">Actions</TableHead>
+          <div className="p-6 border-b">
+            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Incidents
+            </h2>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-semibold text-gray-700">Reporter</TableHead>
+                <TableHead className="font-semibold text-gray-700">Type</TableHead>
+                <TableHead className="font-semibold text-gray-700">Department</TableHead>
+                <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                <TableHead className="font-semibold text-gray-700">Date</TableHead>
+                <TableHead className="font-semibold text-gray-700 text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {incidentsLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    Loading incidents...
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {feedbacksLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      Loading feedbacks...
-                    </TableCell>
-                  </TableRow>
-                ) : feedbacks && feedbacks.length > 0 ? (
-                  feedbacks.map((feedback, index) => (
-                    <TableRow 
-                      key={feedback.id} 
-                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                    >
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <img
-                            src={feedback.employee?.profile_image_url || '/placeholder.svg'}
-                            alt={feedback.employee?.name || 'Employee'}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div>
-                            <div className="font-medium text-gray-900">
-                              {feedback.employee?.name || 'Unknown Employee'}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {feedback.employee?.position || 'No Position'}
-                            </div>
+              ) : incidents && incidents.length > 0 ? (
+                incidents.map((incident) => (
+                  <TableRow key={incident.id}>
+                    <TableCell>
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={incident.employee?.profile_image_url || '/placeholder.svg'}
+                          alt={incident.employee?.name || 'Employee'}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {incident.employee?.name || 'Unknown Employee'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {incident.employee?.position || 'N/A'}
                           </div>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        <div className="max-w-xs truncate" title={feedback.subject}>
-                          {feedback.subject}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {feedback.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`capitalize ${getPriorityColor(feedback.priority)}`}>
-                          {feedback.priority}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`capitalize ${getStatusColor(feedback.status)}`}>
-                          {feedback.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        {new Date(feedback.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setSelectedFeedback(feedback)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                            <DialogTitle>Feedback Details</DialogTitle>
-                            {selectedFeedback && (
-                              <FeedbackDetails feedback={selectedFeedback} />
-                            )}
-                          </DialogContent>
-                        </Dialog>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                      No feedbacks found
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{incident.incident_type}</Badge>
+                    </TableCell>
+                    <TableCell className="text-gray-700">
+                      {incident.department?.name || 'No Department'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getBadgeVariant(incident.status)}>
+                        {incident.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-gray-700">
+                      {formatDate(incident.date_reported)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedIncident(incident)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                          <DialogTitle>Incident Details</DialogTitle>
+                          {selectedIncident && (
+                            <IncidentDetails incident={selectedIncident} />
+                          )}
+                        </DialogContent>
+                      </Dialog>
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50">
-                  <TableHead className="font-semibold text-gray-700">Employee</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Leave Type</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Duration</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Requested Date</TableHead>
-                  <TableHead className="font-semibold text-gray-700 text-center">Actions</TableHead>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                    No incidents found
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leavesLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      Loading leave requests...
-                    </TableCell>
-                  </TableRow>
-                ) : leaveRequests && leaveRequests.length > 0 ? (
-                  leaveRequests.map((request, index) => (
-                    <TableRow 
-                      key={request.id} 
-                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                    >
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <img
-                            src={request.employee?.profile_image_url || '/placeholder.svg'}
-                            alt={request.employee?.name || 'Employee'}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div>
-                            <div className="font-medium text-gray-900">
-                              {request.employee?.name || 'Unknown Employee'}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {request.department?.name || 'No Department'}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {request.leave_type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        {request.days_requested} days
-                        <div className="text-sm text-gray-500">
-                          {new Date(request.start_date).toLocaleDateString()} - {new Date(request.end_date).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`capitalize ${getStatusColor(request.status)}`}>
-                          {request.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        {new Date(request.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setSelectedLeaveRequest(request)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                            <DialogTitle>Leave Request Details</DialogTitle>
-                            {selectedLeaveRequest && (
-                              <LeaveRequestDetails 
-                                leaveRequest={selectedLeaveRequest}
-                                onStatusUpdate={handleStatusUpdate}
-                                isUpdating={updateLeaveRequestMutation.isPending}
-                              />
-                            )}
-                          </DialogContent>
-                        </Dialog>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      No leave requests found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          )}
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>

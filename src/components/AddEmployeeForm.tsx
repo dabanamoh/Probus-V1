@@ -32,7 +32,7 @@ const AddEmployeeForm = ({ onClose }: { onClose: () => void }) => {
     dateOfBirth: '',
     qualification: '',
     certification: '',
-    departmentId: '',
+    departmentId: 'none', // Default to 'none' to match EditEmployeeForm
     position: '',
     level: '',
     jobDescription: '',
@@ -58,18 +58,20 @@ const AddEmployeeForm = ({ onClose }: { onClose: () => void }) => {
 
   const createEmployeeMutation = useMutation({
     mutationFn: async (employeeData: any) => {
+      const fullName = `${employeeData.firstName} ${employeeData.middleName} ${employeeData.lastName}`.trim();
+      
       const { data, error } = await supabase
         .from('employees')
         .insert([{
-          name: `${employeeData.firstName} ${employeeData.middleName} ${employeeData.lastName}`.trim(),
+          name: fullName,
           position: employeeData.position,
-          department_id: employeeData.departmentId,
+          department_id: employeeData.departmentId === 'none' ? null : employeeData.departmentId, // Match EditEmployeeForm logic
           level: employeeData.level,
           qualification: employeeData.qualification,
           certifications: employeeData.certification,
-          date_of_birth: employeeData.dateOfBirth,
+          date_of_birth: employeeData.dateOfBirth || null,
           job_description: employeeData.jobDescription,
-          date_of_resumption: employeeData.dateOfResumption,
+          date_of_resumption: employeeData.dateOfResumption || null,
           profile_image_url: '/placeholder.svg'
         }])
         .select();
@@ -124,7 +126,7 @@ const AddEmployeeForm = ({ onClose }: { onClose: () => void }) => {
             <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">First name</Label>
             <Input
               id="firstName"
-              placeholder="Type the department name here"
+              placeholder="Type the first name here"
               value={formData.firstName}
               onChange={(e) => handleInputChange('firstName', e.target.value)}
               required
@@ -135,7 +137,7 @@ const AddEmployeeForm = ({ onClose }: { onClose: () => void }) => {
             <Label htmlFor="middleName" className="text-sm font-medium text-gray-700">Middle Name</Label>
             <Input
               id="middleName"
-              placeholder="Type the department name here"
+              placeholder="Type the middle name here"
               value={formData.middleName}
               onChange={(e) => handleInputChange('middleName', e.target.value)}
               className="mt-1"
@@ -145,7 +147,7 @@ const AddEmployeeForm = ({ onClose }: { onClose: () => void }) => {
             <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">Last Name</Label>
             <Input
               id="lastName"
-              placeholder="Type the department name here"
+              placeholder="Type the last name here"
               value={formData.lastName}
               onChange={(e) => handleInputChange('lastName', e.target.value)}
               required
@@ -162,7 +164,6 @@ const AddEmployeeForm = ({ onClose }: { onClose: () => void }) => {
             type="date"
             value={formData.dateOfBirth}
             onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-            required
             className="mt-1 max-w-md"
           />
         </div>
@@ -202,6 +203,7 @@ const AddEmployeeForm = ({ onClose }: { onClose: () => void }) => {
               <SelectValue placeholder="Select department name here" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="none">No Department</SelectItem>
               {departments?.map((department) => (
                 <SelectItem key={department.id} value={department.id}>
                   {department.name}
