@@ -64,7 +64,8 @@ export const useThemeSettings = () => {
         description: "Your theme settings have been saved successfully.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Theme update error:', error);
       toast({
         title: "Error",
         description: "Failed to update theme settings. Please try again.",
@@ -76,18 +77,43 @@ export const useThemeSettings = () => {
   // Upload logo mutation
   const uploadLogoMutation = useMutation({
     mutationFn: async (file: File) => {
+      console.log('Starting file upload:', file.name, file.size, file.type);
+      
+      // Validate file
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Invalid file type. Please upload an image file.');
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('File too large. Please upload an image smaller than 5MB.');
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
       
-      const { error: uploadError } = await supabase.storage
+      console.log('Uploading to storage with filename:', fileName);
+      
+      // Upload file to storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('company-logos')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
 
+      console.log('Upload successful:', uploadData);
+
+      // Get public URL
       const { data: urlData } = supabase.storage
         .from('company-logos')
         .getPublicUrl(fileName);
+
+      console.log('Public URL generated:', urlData.publicUrl);
 
       return {
         url: urlData.publicUrl,
@@ -96,6 +122,7 @@ export const useThemeSettings = () => {
       };
     },
     onSuccess: (logoData) => {
+      console.log('Logo data to save:', logoData);
       updateThemeMutation.mutate({ 
         key: 'company_logo', 
         value: logoData 
@@ -105,10 +132,11 @@ export const useThemeSettings = () => {
         description: "Your company logo has been uploaded successfully.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Logo upload error:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload logo. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload logo. Please try again.",
         variant: "destructive",
       });
     }
