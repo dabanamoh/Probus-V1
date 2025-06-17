@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Palette, Upload, Eye, RotateCcw, ImageIcon, X } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 import { useThemeSettings } from './hooks/useThemeSettings';
 
 interface ThemeColors {
@@ -17,6 +18,7 @@ interface ThemeColors {
 }
 
 const ThemeSettings = () => {
+  const { toast } = useToast();
   const { themeQuery, updateThemeMutation, uploadLogoMutation, applyThemeColors } = useThemeSettings();
   const [previewColors, setPreviewColors] = useState<ThemeColors | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
