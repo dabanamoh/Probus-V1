@@ -13,12 +13,25 @@ export const usePermissions = () => {
   const permissionsQuery = useQuery({
     queryKey: ['permissions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('permissions')
-        .select('*')
-        .order('category', { ascending: true });
-      if (error) throw error;
-      return data;
+      console.log('Fetching permissions...');
+      try {
+        const { data, error } = await supabase
+          .from('permissions')
+          .select('*')
+          .order('category', { ascending: true });
+        
+        console.log('Permissions query result:', { data, error });
+        
+        if (error) {
+          console.error('Permissions query error:', error);
+          throw error;
+        }
+        
+        return data;
+      } catch (err) {
+        console.error('Error in permissions query:', err);
+        throw err;
+      }
     }
   });
 
@@ -26,21 +39,34 @@ export const usePermissions = () => {
   const getRolePermissionsQuery = (selectedRole: AppRole) => useQuery({
     queryKey: ['role-permissions', selectedRole],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('role_permissions')
-        .select(`
-          id,
-          permission_id,
-          permissions (
+      console.log('Fetching role permissions for:', selectedRole);
+      try {
+        const { data, error } = await supabase
+          .from('role_permissions')
+          .select(`
             id,
-            name,
-            description,
-            category
-          )
-        `)
-        .eq('role', selectedRole);
-      if (error) throw error;
-      return data;
+            permission_id,
+            permissions (
+              id,
+              name,
+              description,
+              category
+            )
+          `)
+          .eq('role', selectedRole);
+        
+        console.log('Role permissions query result:', { data, error, role: selectedRole });
+        
+        if (error) {
+          console.error('Role permissions query error:', error);
+          throw error;
+        }
+        
+        return data;
+      } catch (err) {
+        console.error('Error in role permissions query:', err);
+        throw err;
+      }
     }
   });
 
@@ -64,23 +90,34 @@ export const usePermissions = () => {
       hasPermission: boolean; 
       role: AppRole;
     }) => {
+      console.log('Toggle permission mutation:', { permissionId, hasPermission, role });
+      
       if (hasPermission) {
         // Remove permission
+        console.log('Removing permission...');
         const { error } = await supabase
           .from('role_permissions')
           .delete()
           .eq('role', role)
           .eq('permission_id', permissionId);
-        if (error) throw error;
+        if (error) {
+          console.error('Error removing permission:', error);
+          throw error;
+        }
       } else {
         // Add permission
+        console.log('Adding permission...');
         const { error } = await supabase
           .from('role_permissions')
           .insert({ role, permission_id: permissionId });
-        if (error) throw error;
+        if (error) {
+          console.error('Error adding permission:', error);
+          throw error;
+        }
       }
     },
     onSuccess: () => {
+      console.log('Permission toggle successful');
       queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
       toast({
         title: "Permission updated",
@@ -88,6 +125,7 @@ export const usePermissions = () => {
       });
     },
     onError: (error) => {
+      console.error('Permission toggle error:', error);
       toast({
         title: "Error",
         description: "Failed to update permission. Please try again.",
