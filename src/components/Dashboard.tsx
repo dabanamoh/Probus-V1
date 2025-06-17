@@ -38,7 +38,7 @@ const Dashboard = () => {
       subtitle: "View all notices sent to employees",
       color: "bg-gradient-to-br from-emerald-100 to-emerald-200",
       icon: Bell,
-      path: "/feedbacks",
+      path: "/notices",
       avatars: [
         { name: "User 1", image: "" },
         { name: "User 2", image: "" },

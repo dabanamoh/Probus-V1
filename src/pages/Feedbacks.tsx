@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Sidebar from '@/components/Sidebar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus, Eye, MessageSquare, Calendar, Users, AlertTriangle } from 'lucide-react';
+import { Search, Eye, MessageSquare, Calendar, AlertTriangle } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -14,11 +15,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeedbackDetails from '@/components/FeedbackDetails';
@@ -49,7 +45,6 @@ interface Feedback {
   created_at: string;
   employee_id: string;
   employee: Employee;
-  department?: Department;
 }
 
 interface LeaveRequest {
@@ -66,7 +61,6 @@ interface LeaveRequest {
   reviewed_at: string | null;
   reviewed_by: string | null;
   employee: Employee;
-  department: Department;
 }
 
 interface Incident {
@@ -80,7 +74,6 @@ interface Incident {
   reporter_id: string;
   department_id: string | null;
   employee: Employee;
-  department: Department | null;
 }
 
 const Feedbacks = () => {
@@ -115,7 +108,7 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return data as Feedback[];
+      return (data || []).filter(feedback => feedback.employee) as Feedback[];
     },
   });
 
@@ -132,10 +125,6 @@ const Feedbacks = () => {
             position,
             profile_image_url,
             department_id
-          ),
-          department:departments(
-            id,
-            name
           )
         `);
 
@@ -146,7 +135,7 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return (data || []).filter(request => request.employee && request.department) as LeaveRequest[];
+      return (data || []).filter(request => request.employee) as LeaveRequest[];
     },
   });
 
@@ -163,10 +152,6 @@ const Feedbacks = () => {
             position,
             profile_image_url,
             department_id
-          ),
-          department:departments(
-            id,
-            name
           )
         `);
 
@@ -177,7 +162,7 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return (data || []).map(incident => ({
+      return (data || []).filter(incident => incident.employee).map(incident => ({
         ...incident,
         status: incident.status as 'pending' | 'resolved' | 'invalid'
       })) as Incident[];
@@ -524,7 +509,6 @@ const Feedbacks = () => {
               <TableRow className="bg-gray-50">
                 <TableHead className="font-semibold text-gray-700">Reporter</TableHead>
                 <TableHead className="font-semibold text-gray-700">Type</TableHead>
-                <TableHead className="font-semibold text-gray-700">Department</TableHead>
                 <TableHead className="font-semibold text-gray-700">Status</TableHead>
                 <TableHead className="font-semibold text-gray-700">Date</TableHead>
                 <TableHead className="font-semibold text-gray-700 text-center">Actions</TableHead>
@@ -533,7 +517,7 @@ const Feedbacks = () => {
             <TableBody>
               {incidentsLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={5} className="text-center py-8">
                     Loading incidents...
                   </TableCell>
                 </TableRow>
@@ -559,9 +543,6 @@ const Feedbacks = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">{incident.incident_type}</Badge>
-                    </TableCell>
-                    <TableCell className="text-gray-700">
-                      {incident.department?.name || 'No Department'}
                     </TableCell>
                     <TableCell>
                       <Badge variant={getBadgeVariant(incident.status)}>
@@ -594,7 +575,7 @@ const Feedbacks = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                     No incidents found
                   </TableCell>
                 </TableRow>
