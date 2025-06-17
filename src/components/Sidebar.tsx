@@ -88,7 +88,10 @@ const Sidebar = ({ className }: SidebarProps) => {
         </div>
         
         <div className="mt-3 flex justify-center">
-          <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center cursor-pointer hover:bg-opacity-30 transition-all duration-200">
+          <div 
+            className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center cursor-pointer hover:bg-opacity-30 transition-all duration-200"
+            onClick={() => navigate('/settings')}
+          >
             <Settings className="w-5 h-5" />
           </div>
         </div>
