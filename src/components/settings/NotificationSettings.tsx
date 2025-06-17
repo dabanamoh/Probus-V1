@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Mail, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Bell, Mail, Smartphone, MessageSquare } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
-interface NotificationSettings {
+interface NotificationSettingsType {
   email_notifications?: boolean;
   push_notifications?: boolean;
   sms_notifications?: boolean;
+  [key: string]: any;
 }
 
 const NotificationSettings = () => {
@@ -30,17 +31,17 @@ const NotificationSettings = () => {
         .eq('setting_key', 'notification_settings')
         .single();
       if (error) throw error;
-      return data.setting_value as NotificationSettings;
+      return data.setting_value as NotificationSettingsType;
     }
   });
 
   // Update notification settings
   const updateNotificationMutation = useMutation({
-    mutationFn: async (updatedSettings: NotificationSettings) => {
+    mutationFn: async (updatedSettings: NotificationSettingsType) => {
       const { error } = await supabase
         .from('app_settings')
         .update({ 
-          setting_value: updatedSettings, 
+          setting_value: updatedSettings as any, 
           updated_at: new Date().toISOString() 
         })
         .eq('setting_key', 'notification_settings');
@@ -62,13 +63,10 @@ const NotificationSettings = () => {
     }
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const updatedSettings: NotificationSettings = {
-      email_notifications: formData.get('email_notifications') === 'on',
-      push_notifications: formData.get('push_notifications') === 'on',
-      sms_notifications: formData.get('sms_notifications') === 'on',
+  const handleSettingChange = (key: keyof NotificationSettingsType, value: boolean) => {
+    const updatedSettings = {
+      ...notificationSettings,
+      [key]: value
     };
     updateNotificationMutation.mutate(updatedSettings);
   };
@@ -77,152 +75,85 @@ const NotificationSettings = () => {
     return <div>Loading notification settings...</div>;
   }
 
-  const notificationTypes = [
-    {
-      id: 'leave_requests',
-      title: 'Leave Requests',
-      description: 'Notifications for new leave requests and approvals',
-      icon: AlertTriangle,
-    },
-    {
-      id: 'employee_updates',
-      title: 'Employee Updates',
-      description: 'New employee registrations and profile changes',
-      icon: Bell,
-    },
-    {
-      id: 'kpi_submissions',
-      title: 'KPI Submissions',
-      description: 'New KPI submissions and reviews',
-      icon: MessageSquare,
-    },
-    {
-      id: 'system_alerts',
-      title: 'System Alerts',
-      description: 'Important system notifications and maintenance',
-      icon: AlertTriangle,
-    },
-  ];
-
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Bell className="w-5 h-5" />
-          Notification Preferences
+          Global Notification Preferences
         </h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Global Notification Settings */}
+        <p className="text-sm text-gray-600 mb-6">
+          Configure how users receive notifications across the application
+        </p>
+
+        <div className="space-y-6">
+          {/* Email Notifications */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Global Notification Methods</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email Notifications
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-gray-500" />
-                  <div>
-                    <Label htmlFor="email_notifications">Email Notifications</Label>
-                    <p className="text-sm text-gray-600">Receive notifications via email</p>
-                  </div>
+                <div>
+                  <Label className="text-sm font-medium">Enable Email Notifications</Label>
+                  <p className="text-xs text-gray-600">Send notifications via email to users</p>
                 </div>
                 <Switch
-                  id="email_notifications"
-                  name="email_notifications"
-                  defaultChecked={notificationSettings?.email_notifications || false}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Bell className="w-5 h-5 text-gray-500" />
-                  <div>
-                    <Label htmlFor="push_notifications">Push Notifications</Label>
-                    <p className="text-sm text-gray-600">Receive browser push notifications</p>
-                  </div>
-                </div>
-                <Switch
-                  id="push_notifications"
-                  name="push_notifications"
-                  defaultChecked={notificationSettings?.push_notifications || false}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <MessageSquare className="w-5 h-5 text-gray-500" />
-                  <div>
-                    <Label htmlFor="sms_notifications">SMS Notifications</Label>
-                    <p className="text-sm text-gray-600">Receive notifications via SMS (requires setup)</p>
-                  </div>
-                </div>
-                <Switch
-                  id="sms_notifications"
-                  name="sms_notifications"
-                  defaultChecked={notificationSettings?.sms_notifications || false}
+                  checked={notificationSettings?.email_notifications || false}
+                  onCheckedChange={(checked) => handleSettingChange('email_notifications', checked)}
                 />
               </div>
             </CardContent>
           </Card>
 
-          <Button type="submit" disabled={updateNotificationMutation.isPending}>
-            {updateNotificationMutation.isPending ? 'Saving...' : 'Save Notification Settings'}
-          </Button>
-        </form>
-      </div>
-
-      {/* Notification Types */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Notification Types</h3>
-        <div className="grid gap-4">
-          {notificationTypes.map((type) => (
-            <Card key={type.id}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <type.icon className="w-5 h-5 text-gray-500" />
-                    <div>
-                      <div className="font-medium">{type.title}</div>
-                      <div className="text-sm text-gray-600">{type.description}</div>
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Coming Soon
-                  </div>
+          {/* Push Notifications */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Smartphone className="w-4 h-4" />
+                Push Notifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Enable Push Notifications</Label>
+                  <p className="text-xs text-gray-600">Send real-time notifications to browsers and mobile devices</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <Switch
+                  checked={notificationSettings?.push_notifications || false}
+                  onCheckedChange={(checked) => handleSettingChange('push_notifications', checked)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* SMS Notifications */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" />
+                SMS Notifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Enable SMS Notifications</Label>
+                  <p className="text-xs text-gray-600">Send notifications via SMS for critical updates</p>
+                </div>
+                <Switch
+                  checked={notificationSettings?.sms_notifications || false}
+                  onCheckedChange={(checked) => handleSettingChange('sms_notifications', checked)}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      {/* Notification Statistics */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Notification Statistics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">24</div>
-              <div className="text-sm text-gray-600">Sent Today</div>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">156</div>
-              <div className="text-sm text-gray-600">This Week</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">89%</div>
-              <div className="text-sm text-gray-600">Delivery Rate</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

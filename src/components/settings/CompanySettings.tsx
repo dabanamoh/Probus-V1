@@ -16,6 +16,7 @@ interface CompanyInfo {
   address?: string;
   phone?: string;
   email?: string;
+  [key: string]: any;
 }
 
 const CompanySettings = () => {
@@ -42,7 +43,7 @@ const CompanySettings = () => {
       const { error } = await supabase
         .from('app_settings')
         .update({ 
-          setting_value: updatedInfo, 
+          setting_value: updatedInfo as any, 
           updated_at: new Date().toISOString() 
         })
         .eq('setting_key', 'company_info');

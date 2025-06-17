@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Lock, Clock, Key } from 'lucide-react';
+import { Separator } from "@/components/ui/separator";
+import { Shield, Lock, Timer, AlertTriangle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
-interface SecuritySettings {
+interface SecuritySettingsType {
   password_min_length?: number;
   require_2fa?: boolean;
   session_timeout?: number;
+  [key: string]: any;
 }
 
 const SecuritySettings = () => {
@@ -31,17 +32,17 @@ const SecuritySettings = () => {
         .eq('setting_key', 'security_settings')
         .single();
       if (error) throw error;
-      return data.setting_value as SecuritySettings;
+      return data.setting_value as SecuritySettingsType;
     }
   });
 
   // Update security settings
   const updateSecurityMutation = useMutation({
-    mutationFn: async (updatedSettings: SecuritySettings) => {
+    mutationFn: async (updatedSettings: SecuritySettingsType) => {
       const { error } = await supabase
         .from('app_settings')
         .update({ 
-          setting_value: updatedSettings, 
+          setting_value: updatedSettings as any, 
           updated_at: new Date().toISOString() 
         })
         .eq('setting_key', 'security_settings');
@@ -66,10 +67,18 @@ const SecuritySettings = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const updatedSettings: SecuritySettings = {
+    const updatedSettings: SecuritySettingsType = {
       password_min_length: parseInt(formData.get('password_min_length') as string),
-      require_2fa: formData.get('require_2fa') === 'on',
+      require_2fa: securitySettings?.require_2fa || false,
       session_timeout: parseInt(formData.get('session_timeout') as string),
+    };
+    updateSecurityMutation.mutate(updatedSettings);
+  };
+
+  const handle2FAChange = (enabled: boolean) => {
+    const updatedSettings = {
+      ...securitySettings,
+      require_2fa: enabled
     };
     updateSecurityMutation.mutate(updatedSettings);
   };
@@ -85,54 +94,53 @@ const SecuritySettings = () => {
           <Shield className="w-5 h-5" />
           Security Configuration
         </h3>
-        
+        <p className="text-sm text-gray-600 mb-6">
+          Configure application-wide security policies and requirements
+        </p>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Password Policy */}
+          {/* Password Requirements */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
                 <Lock className="w-4 h-4" />
-                Password Policy
+                Password Requirements
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="password_min_length">Minimum Password Length</Label>
-                  <Select name="password_min_length" defaultValue={securitySettings?.password_min_length?.toString() || '8'}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="6">6 characters</SelectItem>
-                      <SelectItem value="8">8 characters</SelectItem>
-                      <SelectItem value="10">10 characters</SelectItem>
-                      <SelectItem value="12">12 characters</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="password_min_length">Minimum Password Length</Label>
+                <Input
+                  id="password_min_length"
+                  name="password_min_length"
+                  type="number"
+                  min="6"
+                  max="20"
+                  defaultValue={securitySettings?.password_min_length || 8}
+                  className="w-24"
+                />
+                <p className="text-xs text-gray-600">Minimum number of characters required for passwords</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Two-Factor Authentication */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Key className="w-4 h-4" />
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
                 Two-Factor Authentication
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="require_2fa">Require 2FA for all users</Label>
-                  <p className="text-sm text-gray-600">Force all users to enable two-factor authentication</p>
+                  <Label className="text-sm font-medium">Require 2FA for all users</Label>
+                  <p className="text-xs text-gray-600">Force all users to enable two-factor authentication</p>
                 </div>
                 <Switch
-                  id="require_2fa"
-                  name="require_2fa"
-                  defaultChecked={securitySettings?.require_2fa || false}
+                  checked={securitySettings?.require_2fa || false}
+                  onCheckedChange={handle2FAChange}
                 />
               </div>
             </CardContent>
@@ -140,29 +148,25 @@ const SecuritySettings = () => {
 
           {/* Session Management */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Clock className="w-4 h-4" />
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Timer className="w-4 h-4" />
                 Session Management
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="session_timeout">Session Timeout (minutes)</Label>
-                <Select name="session_timeout" defaultValue={securitySettings?.session_timeout?.toString() || '480'}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
-                    <SelectItem value="120">2 hours</SelectItem>
-                    <SelectItem value="240">4 hours</SelectItem>
-                    <SelectItem value="480">8 hours</SelectItem>
-                    <SelectItem value="1440">24 hours</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-gray-600">Users will be automatically logged out after this period of inactivity</p>
+                <Input
+                  id="session_timeout"
+                  name="session_timeout"
+                  type="number"
+                  min="30"
+                  max="1440"
+                  defaultValue={securitySettings?.session_timeout || 480}
+                  className="w-32"
+                />
+                <p className="text-xs text-gray-600">Automatically log out users after this period of inactivity</p>
               </div>
             </CardContent>
           </Card>
@@ -173,34 +177,26 @@ const SecuritySettings = () => {
         </form>
       </div>
 
-      {/* Security Status Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Security Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                {securitySettings?.password_min_length || 8}
-              </div>
-              <div className="text-sm text-gray-600">Min Password Length</div>
-            </div>
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
-                {securitySettings?.require_2fa ? 'ON' : 'OFF'}
-              </div>
-              <div className="text-sm text-gray-600">2FA Required</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">
-                {Math.floor((securitySettings?.session_timeout || 480) / 60)}h
-              </div>
-              <div className="text-sm text-gray-600">Session Timeout</div>
-            </div>
+      <Separator />
+
+      {/* Current Settings Summary */}
+      <div>
+        <h4 className="font-semibold mb-3">Current Security Policy</h4>
+        <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Minimum Password Length:</span>
+            <span className="font-medium">{securitySettings?.password_min_length || 8} characters</span>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex justify-between text-sm">
+            <span>Two-Factor Authentication:</span>
+            <span className="font-medium">{securitySettings?.require_2fa ? 'Required' : 'Optional'}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span>Session Timeout:</span>
+            <span className="font-medium">{Math.floor((securitySettings?.session_timeout || 480) / 60)} hours</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
