@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,10 @@ import {
   CreditCard,
   Bell,
   Shield,
-  Settings
+  Settings,
+  MessageSquare,
+  Brain,
+  BarChart3
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -32,6 +36,28 @@ const Dashboard = () => {
   ];
 
   const secondaryCards = [
+    {
+      title: "AI Analytics Dashboard",
+      subtitle: "AI-powered insights, risk assessment, and trend analysis",
+      color: "bg-gradient-to-br from-purple-100 to-purple-200",
+      icon: Brain,
+      path: "/ai-analytics",
+      avatars: []
+    },
+    {
+      title: "Team Chat & Communication",
+      subtitle: "Secure messaging with AI-powered content analysis",
+      color: "bg-gradient-to-br from-blue-100 to-blue-200", 
+      icon: MessageSquare,
+      path: "/chat",
+      avatars: [
+        { name: "User 1", image: "" },
+        { name: "User 2", image: "" },
+        { name: "User 3", image: "" },
+        { name: "User 4", image: "" },
+        { name: "User 5", image: "" }
+      ]
+    },
     {
       title: "Notice",
       subtitle: "View all notices sent to employees",

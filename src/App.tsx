@@ -14,6 +14,8 @@ import Feedbacks from "./pages/Feedbacks";
 import Notices from "./pages/Notices";
 import Events from "./pages/Events";
 import Settings from "./pages/Settings";
+import Chat from "./pages/Chat";
+import AIAnalytics from "./pages/AIAnalytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
             <Route path="/notices" element={<Notices />} />
             <Route path="/events" element={<Events />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/ai-analytics" element={<AIAnalytics />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

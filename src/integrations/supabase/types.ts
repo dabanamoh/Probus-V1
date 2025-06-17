@@ -9,6 +9,95 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_analytics: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          id: string
+          metric_category: string
+          metric_data: Json
+          metric_name: string
+          metric_value: number | null
+          period_end: string
+          period_start: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          metric_category: string
+          metric_data?: Json
+          metric_name: string
+          metric_value?: number | null
+          period_end: string
+          period_start: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          metric_category?: string
+          metric_data?: Json
+          metric_name?: string
+          metric_value?: number | null
+          period_end?: string
+          period_start?: string
+        }
+        Relationships: []
+      }
+      ai_risk_assessments: {
+        Row: {
+          analysis_data: Json
+          assessment_type: Database["public"]["Enums"]["ai_analysis_type"]
+          confidence_score: number | null
+          created_at: string
+          employee_id: string
+          expires_at: string | null
+          id: string
+          recommendations: string[] | null
+          requires_action: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+        }
+        Insert: {
+          analysis_data?: Json
+          assessment_type: Database["public"]["Enums"]["ai_analysis_type"]
+          confidence_score?: number | null
+          created_at?: string
+          employee_id: string
+          expires_at?: string | null
+          id?: string
+          recommendations?: string[] | null
+          requires_action?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+        }
+        Update: {
+          analysis_data?: Json
+          assessment_type?: Database["public"]["Enums"]["ai_analysis_type"]
+          confidence_score?: number | null
+          created_at?: string
+          employee_id?: string
+          expires_at?: string | null
+          id?: string
+          recommendations?: string[] | null
+          requires_action?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_risk_assessments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           category: string
@@ -36,6 +125,217 @@ export type Database = {
           setting_key?: string
           setting_value?: Json
           updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_group_members: {
+        Row: {
+          group_id: string
+          id: string
+          is_admin: boolean
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          is_admin?: boolean
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          is_admin?: boolean
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chat_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          department_id: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          type: Database["public"]["Enums"]["chat_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          type?: Database["public"]["Enums"]["chat_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          type?: Database["public"]["Enums"]["chat_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_groups_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          content: string | null
+          created_at: string
+          edited_at: string | null
+          file_name: string | null
+          file_size: number | null
+          file_url: string | null
+          group_id: string
+          id: string
+          message_type: Database["public"]["Enums"]["message_type"]
+          metadata: Json | null
+          reply_to_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          edited_at?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          group_id: string
+          id?: string
+          message_type?: Database["public"]["Enums"]["message_type"]
+          metadata?: Json | null
+          reply_to_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          edited_at?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          group_id?: string
+          id?: string
+          message_type?: Database["public"]["Enums"]["message_type"]
+          metadata?: Json | null
+          reply_to_id?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chat_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_policies: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string
+          effective_date: string
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          created_by: string
+          effective_date: string
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          effective_date?: string
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      data_processing_logs: {
+        Row: {
+          action_type: string
+          created_at: string
+          data_category: string
+          id: string
+          legal_basis: string
+          processor_id: string | null
+          purpose: string
+          retention_period: unknown | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          data_category: string
+          id?: string
+          legal_basis: string
+          processor_id?: string | null
+          purpose: string
+          retention_period?: unknown | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          data_category?: string
+          id?: string
+          legal_basis?: string
+          processor_id?: string | null
+          purpose?: string
+          retention_period?: unknown | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -572,7 +872,17 @@ export type Database = {
       }
     }
     Enums: {
+      ai_analysis_type:
+        | "performance"
+        | "behavioral"
+        | "compliance"
+        | "fraud"
+        | "harassment"
       app_role: "admin" | "manager" | "employee" | "hr"
+      chat_type: "direct" | "group" | "department"
+      file_access_level: "public" | "department" | "private" | "restricted"
+      message_type: "text" | "file" | "system"
+      risk_level: "low" | "medium" | "high" | "critical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -688,7 +998,18 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ai_analysis_type: [
+        "performance",
+        "behavioral",
+        "compliance",
+        "fraud",
+        "harassment",
+      ],
       app_role: ["admin", "manager", "employee", "hr"],
+      chat_type: ["direct", "group", "department"],
+      file_access_level: ["public", "department", "private", "restricted"],
+      message_type: ["text", "file", "system"],
+      risk_level: ["low", "medium", "high", "critical"],
     },
   },
 } as const
