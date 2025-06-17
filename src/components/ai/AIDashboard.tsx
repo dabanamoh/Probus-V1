@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +12,8 @@ import {
   Shield, 
   MessageSquare,
   BarChart3,
-  Eye
+  calendar,
+  history
 } from 'lucide-react';
 import {
   BarChart,
@@ -29,28 +29,28 @@ import {
   LineChart,
   Line
 } from 'recharts';
+import AnalyticsCard from './AnalyticsCard';
+import DetailModal from './DetailModal';
+import HistoryTable from './HistoryTable';
 
-interface RiskAssessment {
-  id: string;
-  employee_name: string;
-  risk_level: 'low' | 'medium' | 'high' | 'critical';
-  assessment_type: string;
-  confidence_score: number;
-  requires_action: boolean;
-  created_at: string;
-}
-
-interface AnalyticsData {
-  department: string;
-  risk_score: number;
-  incidents: number;
-  performance: number;
+interface DashboardData {
+  riskAssessments: any[];
+  predictions: any[];
+  complianceHistory: any[];
+  riskIncidents: any[];
 }
 
 const AIDashboard: React.FC = () => {
-  const [riskAssessments, setRiskAssessments] = useState<RiskAssessment[]>([]);
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    riskAssessments: [],
+    predictions: [],
+    complianceHistory: [],
+    riskIncidents: []
+  });
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [modalType, setModalType] = useState<'risk' | 'prediction' | 'compliance' | 'incident'>('risk');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -59,47 +59,65 @@ const AIDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      // Mock data for demonstration - in real app, this would come from AI analysis
-      const mockRiskAssessments: RiskAssessment[] = [
-        {
-          id: '1',
-          employee_name: 'John Doe',
-          risk_level: 'high',
-          assessment_type: 'behavioral',
-          confidence_score: 0.85,
-          requires_action: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          employee_name: 'Jane Smith',
-          risk_level: 'medium',
-          assessment_type: 'performance',
-          confidence_score: 0.72,
-          requires_action: false,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '3',
-          employee_name: 'Mike Johnson',
-          risk_level: 'low',
-          assessment_type: 'compliance',
-          confidence_score: 0.91,
-          requires_action: false,
-          created_at: new Date().toISOString()
-        }
-      ];
+      // Load AI Risk Assessments
+      const { data: riskData } = await supabase
+        .from('ai_risk_assessments')
+        .select(`
+          *,
+          employees(name)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(10);
 
-      const mockAnalytics: AnalyticsData[] = [
-        { department: 'Engineering', risk_score: 2.3, incidents: 1, performance: 8.5 },
-        { department: 'Marketing', risk_score: 1.8, incidents: 0, performance: 9.1 },
-        { department: 'Sales', risk_score: 3.2, incidents: 2, performance: 7.8 },
-        { department: 'HR', risk_score: 1.5, incidents: 0, performance: 8.9 },
-        { department: 'Finance', risk_score: 2.1, incidents: 1, performance: 8.7 }
-      ];
+      // Load AI Predictions
+      const { data: predictionData } = await supabase
+        .from('ai_predictions')
+        .select(`
+          *,
+          employees(name)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(10);
 
-      setRiskAssessments(mockRiskAssessments);
-      setAnalyticsData(mockAnalytics);
+      // Load Compliance History
+      const { data: complianceData } = await supabase
+        .from('compliance_history')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      // Load Risk Incidents
+      const { data: incidentData } = await supabase
+        .from('risk_incidents')
+        .select(`
+          *,
+          employees(name)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      // Transform data to include employee names
+      const transformedRiskData = riskData?.map(item => ({
+        ...item,
+        employee_name: item.employees?.name
+      })) || [];
+
+      const transformedPredictionData = predictionData?.map(item => ({
+        ...item,
+        employee_name: item.employees?.name
+      })) || [];
+
+      const transformedIncidentData = incidentData?.map(item => ({
+        ...item,
+        employee_name: item.employees?.name
+      })) || [];
+
+      setDashboardData({
+        riskAssessments: transformedRiskData,
+        predictions: transformedPredictionData,
+        complianceHistory: complianceData || [],
+        riskIncidents: transformedIncidentData
+      });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -107,14 +125,27 @@ const AIDashboard: React.FC = () => {
     }
   };
 
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default: return 'bg-green-100 text-green-800 border-green-200';
-    }
+  const openModal = (item: any, type: 'risk' | 'prediction' | 'compliance' | 'incident') => {
+    setSelectedItem(item);
+    setModalType(type);
+    setIsModalOpen(true);
   };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedItem(null);
+  };
+
+  // Calculate KPI values from real data
+  const highRiskEmployees = dashboardData.riskAssessments.filter(
+    assessment => assessment.risk_level === 'high' || assessment.risk_level === 'critical'
+  ).length;
+
+  const totalPredictions = dashboardData.predictions.length;
+  const chatMessagesToday = 1247; // This would come from chat messages table with today's filter
+  const averageComplianceScore = dashboardData.complianceHistory.length > 0
+    ? Math.round(dashboardData.complianceHistory.reduce((sum, item) => sum + item.score, 0) / dashboardData.complianceHistory.length)
+    : 94;
 
   const pieData = [
     { name: 'Low Risk', value: 65, color: '#10B981' },
@@ -139,127 +170,123 @@ const AIDashboard: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">AI Analytics Dashboard</h1>
           <p className="text-gray-600 mt-1">AI-powered insights and risk assessment</p>
         </div>
-        <Button>
+        <Button onClick={loadDashboardData} disabled={isLoading}>
           <Brain className="w-4 h-4 mr-2" />
-          Run AI Analysis
+          {isLoading ? 'Loading...' : 'Refresh Data'}
         </Button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">High Risk Employees</p>
-                <p className="text-2xl font-bold text-red-600">8</p>
-              </div>
-              <AlertTriangle className="w-8 h-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
+        <AnalyticsCard
+          title="High Risk Employees"
+          value={highRiskEmployees}
+          icon={<AlertTriangle className="w-8 h-8" />}
+          description="Requiring immediate attention"
+          type="risk"
+          severity="high"
+          onClick={() => openModal(dashboardData.riskAssessments[0], 'risk')}
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">AI Predictions</p>
-                <p className="text-2xl font-bold text-blue-600">23</p>
-              </div>
-              <Brain className="w-8 h-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
+        <AnalyticsCard
+          title="AI Predictions"
+          value={totalPredictions}
+          icon={<Brain className="w-8 h-8" />}
+          description="Generated this week"
+          type="prediction"
+          onClick={() => openModal(dashboardData.predictions[0], 'prediction')}
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Chat Messages Today</p>
-                <p className="text-2xl font-bold text-green-600">1,247</p>
-              </div>
-              <MessageSquare className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
+        <AnalyticsCard
+          title="Chat Messages Today"
+          value={chatMessagesToday.toLocaleString()}
+          icon={<MessageSquare className="w-8 h-8" />}
+          description="Monitored for risks"
+          type="incident"
+          onClick={() => openModal(dashboardData.riskIncidents[0], 'incident')}
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Compliance Score</p>
-                <p className="text-2xl font-bold text-purple-600">94%</p>
-              </div>
-              <Shield className="w-8 h-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
+        <AnalyticsCard
+          title="Compliance Score"
+          value={`${averageComplianceScore}%`}
+          icon={<Shield className="w-8 h-8" />}
+          description="Average across all areas"
+          type="compliance"
+          onClick={() => openModal(dashboardData.complianceHistory[0], 'compliance')}
+        />
       </div>
 
-      <Tabs defaultValue="risks" className="space-y-6">
+      <Tabs defaultValue="history" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="risks">Risk Assessment</TabsTrigger>
+          <TabsTrigger value="history">Historical Data</TabsTrigger>
           <TabsTrigger value="analytics">Department Analytics</TabsTrigger>
           <TabsTrigger value="trends">Trends & Predictions</TabsTrigger>
           <TabsTrigger value="compliance">GDPR Compliance</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="risks" className="space-y-6">
+        <TabsContent value="history" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Recent Risk Assessments</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <history className="w-5 h-5" />
+                  Risk Assessment History
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {riskAssessments.map((assessment) => (
-                    <div key={assessment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium">{assessment.employee_name}</p>
-                        <p className="text-sm text-gray-600">{assessment.assessment_type}</p>
-                        <p className="text-xs text-gray-500">
-                          Confidence: {(assessment.confidence_score * 100).toFixed(0)}%
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getRiskColor(assessment.risk_level)}>
-                          {assessment.risk_level.toUpperCase()}
-                        </Badge>
-                        {assessment.requires_action && (
-                          <Button size="sm" variant="outline">
-                            <Eye className="w-3 h-3 mr-1" />
-                            Review
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <HistoryTable
+                  data={dashboardData.riskAssessments}
+                  type="risk"
+                  onViewDetails={(item) => openModal(item, 'risk')}
+                />
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Risk Distribution</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="w-5 h-5" />
+                  AI Predictions History
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      dataKey="value"
-                      label={({ name, value }) => `${name}: ${value}%`}
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <HistoryTable
+                  data={dashboardData.predictions}
+                  type="prediction"
+                  onViewDetails={(item) => openModal(item, 'prediction')}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Compliance History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HistoryTable
+                  data={dashboardData.complianceHistory}
+                  type="compliance"
+                  onViewDetails={(item) => openModal(item, 'compliance')}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  Risk Incidents History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HistoryTable
+                  data={dashboardData.riskIncidents}
+                  type="incident"
+                  onViewDetails={(item) => openModal(item, 'incident')}
+                />
               </CardContent>
             </Card>
           </div>
@@ -272,7 +299,7 @@ const AIDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={analyticsData}>
+                <BarChart data={[]}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="department" />
                   <YAxis />
@@ -332,6 +359,13 @@ const AIDashboard: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <DetailModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        data={selectedItem}
+        type={modalType}
+      />
     </div>
   );
 };

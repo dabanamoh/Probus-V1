@@ -45,6 +45,57 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_predictions: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          department_id: string | null
+          employee_id: string | null
+          expires_at: string | null
+          id: string
+          outcome: string | null
+          prediction_data: Json
+          prediction_type: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          department_id?: string | null
+          employee_id?: string | null
+          expires_at?: string | null
+          id?: string
+          outcome?: string | null
+          prediction_data?: Json
+          prediction_type: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          department_id?: string | null
+          employee_id?: string | null
+          expires_at?: string | null
+          id?: string
+          outcome?: string | null
+          prediction_data?: Json
+          prediction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_predictions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_predictions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_risk_assessments: {
         Row: {
           analysis_data: Json
@@ -300,6 +351,42 @@ export type Database = {
           title?: string
           updated_at?: string
           version?: number
+        }
+        Relationships: []
+      }
+      compliance_history: {
+        Row: {
+          actions_required: string[] | null
+          compliance_type: string
+          created_at: string
+          details: Json
+          id: string
+          issues_found: number | null
+          resolved_at: string | null
+          score: number
+          status: string
+        }
+        Insert: {
+          actions_required?: string[] | null
+          compliance_type: string
+          created_at?: string
+          details?: Json
+          id?: string
+          issues_found?: number | null
+          resolved_at?: string | null
+          score: number
+          status?: string
+        }
+        Update: {
+          actions_required?: string[] | null
+          compliance_type?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          issues_found?: number | null
+          resolved_at?: string | null
+          score?: number
+          status?: string
         }
         Relationships: []
       }
@@ -793,6 +880,66 @@ export type Database = {
             columns: ["incident_id"]
             isOneToOne: false
             referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_incidents: {
+        Row: {
+          ai_analysis: Json | null
+          assigned_to: string | null
+          created_at: string
+          department_id: string | null
+          description: string
+          employee_id: string | null
+          id: string
+          incident_type: string
+          resolution_status: string
+          resolved_at: string | null
+          severity: Database["public"]["Enums"]["risk_level"]
+          updated_at: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          assigned_to?: string | null
+          created_at?: string
+          department_id?: string | null
+          description: string
+          employee_id?: string | null
+          id?: string
+          incident_type: string
+          resolution_status?: string
+          resolved_at?: string | null
+          severity: Database["public"]["Enums"]["risk_level"]
+          updated_at?: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          assigned_to?: string | null
+          created_at?: string
+          department_id?: string | null
+          description?: string
+          employee_id?: string | null
+          id?: string
+          incident_type?: string
+          resolution_status?: string
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["risk_level"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_incidents_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_incidents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
