@@ -16,6 +16,7 @@ import Events from "./pages/Events";
 import Settings from "./pages/Settings";
 import Chat from "./pages/Chat";
 import AIAnalytics from "./pages/AIAnalytics";
+import RulesEthics from "./pages/RulesEthics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
