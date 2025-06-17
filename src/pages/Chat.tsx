@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import Sidebar from '@/components/Sidebar';
 import ChatSidebar from '@/components/chat/ChatSidebar';
 import ChatInterface from '@/components/chat/ChatInterface';
 
@@ -12,11 +13,14 @@ const Chat = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50 w-full">
-      <ChatSidebar 
-        activeConversationId={activeConversationId}
-        onConversationSelect={handleConversationSelect}
-      />
-      <ChatInterface conversationId={activeConversationId} />
+      <Sidebar />
+      <div className="flex flex-1">
+        <ChatSidebar 
+          activeConversationId={activeConversationId}
+          onConversationSelect={handleConversationSelect}
+        />
+        <ChatInterface conversationId={activeConversationId} />
+      </div>
     </div>
   );
 };
