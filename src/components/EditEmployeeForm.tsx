@@ -45,17 +45,17 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
     // Profile Section
     name: employee.name,
     position: employee.position,
-    profileImageUrl: employee.profile_image_url,
+    profileImageUrl: employee.profile_image_url || '',
     
     // Personal Information
     firstName: employee.name.split(' ')[0] || '',
     middleName: '',
     lastName: employee.name.split(' ').slice(1).join(' ') || '',
-    dateOfBirth: employee.date_of_birth,
+    dateOfBirth: employee.date_of_birth || '',
     emailAddress: '',
     phoneNumber: '',
     userRole: 'employee',
-    level: employee.level,
+    level: employee.level || '',
     nationality: '',
     religion: '',
     sex: '',
@@ -65,17 +65,14 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
     city: '',
     street: '',
     
-    // Work Experience
-    workExperience: [],
-    
     // Qualification
-    qualification: employee.qualification,
-    certifications: employee.certifications,
+    qualification: employee.qualification || '',
+    certifications: employee.certifications || '',
     
     // Department and Job Info
-    departmentId: employee.department_id,
-    jobDescription: employee.job_description,
-    dateOfResumption: employee.date_of_resumption,
+    departmentId: employee.department_id || '',
+    jobDescription: employee.job_description || '',
+    dateOfResumption: employee.date_of_resumption || '',
     
     // Relations
     nextOfKin: '',
@@ -104,13 +101,13 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
         .update({
           name: fullName,
           position: employeeData.position,
-          department_id: employeeData.departmentId,
+          department_id: employeeData.departmentId || null,
           level: employeeData.level,
           qualification: employeeData.qualification,
           certifications: employeeData.certifications,
-          date_of_birth: employeeData.dateOfBirth,
+          date_of_birth: employeeData.dateOfBirth || null,
           job_description: employeeData.jobDescription,
-          date_of_resumption: employeeData.dateOfResumption,
+          date_of_resumption: employeeData.dateOfResumption || null,
           profile_image_url: employeeData.profileImageUrl,
         })
         .eq('id', employee.id)
@@ -159,8 +156,8 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
             <TabsTrigger value="personal">Personal</TabsTrigger>
             <TabsTrigger value="address">Address</TabsTrigger>
             <TabsTrigger value="work">Work</TabsTrigger>
-            <TabsTrigger value="qualification">Qualification</TabsTrigger>
-            <TabsTrigger value="relations">Relations</TabsTrigger>
+            <TabsTrigger value="qualification">Education</TabsTrigger>
+            <TabsTrigger value="relations">Emergency</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
@@ -247,7 +244,6 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
                     type="date"
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                    required
                     className="mt-1"
                   />
                 </div>
@@ -376,7 +372,7 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
             </Card>
           </TabsContent>
 
-          {/* Work Experience Tab */}
+          {/* Work Information Tab */}
           <TabsContent value="work" className="space-y-4">
             <Card>
               <CardHeader>
@@ -390,6 +386,7 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="">No Department</SelectItem>
                       {departments?.map((department) => (
                         <SelectItem key={department.id} value={department.id}>
                           {department.name}
@@ -422,7 +419,7 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
             </Card>
           </TabsContent>
 
-          {/* Qualification Tab */}
+          {/* Education Tab */}
           <TabsContent value="qualification" className="space-y-4">
             <Card>
               <CardHeader>
@@ -453,7 +450,7 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
             </Card>
           </TabsContent>
 
-          {/* Relations Tab */}
+          {/* Emergency Contacts Tab */}
           <TabsContent value="relations" className="space-y-4">
             <Card>
               <CardHeader>
