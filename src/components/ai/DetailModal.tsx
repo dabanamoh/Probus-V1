@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { calendar, clock } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 
 interface DetailModalProps {
   isOpen: boolean;
@@ -187,12 +187,12 @@ const DetailModal: React.FC<DetailModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center gap-4 text-sm text-gray-500">
               <div className="flex items-center gap-1">
-                <calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4" />
                 Created: {formatDate(data.created_at)}
               </div>
               {data.updated_at && data.updated_at !== data.created_at && (
                 <div className="flex items-center gap-1">
-                  <clock className="w-4 h-4" />
+                  <Clock className="w-4 h-4" />
                   Updated: {formatDate(data.updated_at)}
                 </div>
               )}

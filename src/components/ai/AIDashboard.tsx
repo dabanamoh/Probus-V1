@@ -12,8 +12,8 @@ import {
   Shield, 
   MessageSquare,
   BarChart3,
-  calendar,
-  history
+  Calendar,
+  History
 } from 'lucide-react';
 import {
   BarChart,
@@ -229,7 +229,7 @@ const AIDashboard: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <history className="w-5 h-5" />
+                  <History className="w-5 h-5" />
                   Risk Assessment History
                 </CardTitle>
               </CardHeader>

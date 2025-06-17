@@ -3,7 +3,7 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { calendar, history } from 'lucide-react';
+import { Calendar, History } from 'lucide-react';
 
 interface HistoryTableProps {
   data: any[];
@@ -91,7 +91,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ data, type, onViewDetails }
             <TableCell>{formatDate(item.created_at)}</TableCell>
             <TableCell>
               <Button variant="outline" size="sm" onClick={() => onViewDetails(item)}>
-                <history className="w-3 h-3 mr-1" />
+                <History className="w-3 h-3 mr-1" />
                 View
               </Button>
             </TableCell>
@@ -111,7 +111,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ data, type, onViewDetails }
             <TableCell>{formatDate(item.created_at)}</TableCell>
             <TableCell>
               <Button variant="outline" size="sm" onClick={() => onViewDetails(item)}>
-                <history className="w-3 h-3 mr-1" />
+                <History className="w-3 h-3 mr-1" />
                 View
               </Button>
             </TableCell>
@@ -131,7 +131,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ data, type, onViewDetails }
             <TableCell>{formatDate(item.created_at)}</TableCell>
             <TableCell>
               <Button variant="outline" size="sm" onClick={() => onViewDetails(item)}>
-                <history className="w-3 h-3 mr-1" />
+                <History className="w-3 h-3 mr-1" />
                 View
               </Button>
             </TableCell>
@@ -155,7 +155,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ data, type, onViewDetails }
             <TableCell>{formatDate(item.created_at)}</TableCell>
             <TableCell>
               <Button variant="outline" size="sm" onClick={() => onViewDetails(item)}>
-                <history className="w-3 h-3 mr-1" />
+                <History className="w-3 h-3 mr-1" />
                 View
               </Button>
             </TableCell>
