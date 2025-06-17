@@ -1,69 +1,16 @@
 
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Bell, Mail, Smartphone, MessageSquare } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
-
-interface NotificationSettingsType {
-  email_notifications?: boolean;
-  push_notifications?: boolean;
-  sms_notifications?: boolean;
-  [key: string]: any;
-}
+import { useNotificationSettings } from './hooks/useNotificationSettings';
 
 const NotificationSettings = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { notificationQuery, updateNotificationMutation } = useNotificationSettings();
+  const { data: notificationSettings, isLoading } = notificationQuery;
 
-  // Fetch notification settings
-  const { data: notificationSettings, isLoading } = useQuery({
-    queryKey: ['notification-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('app_settings')
-        .select('*')
-        .eq('setting_key', 'notification_settings')
-        .single();
-      if (error) throw error;
-      return data.setting_value as NotificationSettingsType;
-    }
-  });
-
-  // Update notification settings
-  const updateNotificationMutation = useMutation({
-    mutationFn: async (updatedSettings: NotificationSettingsType) => {
-      const { error } = await supabase
-        .from('app_settings')
-        .update({ 
-          setting_value: updatedSettings as any, 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('setting_key', 'notification_settings');
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
-      toast({
-        title: "Notification settings updated",
-        description: "Your notification preferences have been saved successfully.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update notification settings. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleSettingChange = (key: keyof NotificationSettingsType, value: boolean) => {
+  const handleSettingChange = (key: string, value: boolean) => {
     const updatedSettings = {
       ...notificationSettings,
       [key]: value

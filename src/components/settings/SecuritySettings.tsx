@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,65 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Shield, Lock, Timer, AlertTriangle } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
-
-interface SecuritySettingsType {
-  password_min_length?: number;
-  require_2fa?: boolean;
-  session_timeout?: number;
-  [key: string]: any;
-}
+import { useSecuritySettings } from './hooks/useSecuritySettings';
 
 const SecuritySettings = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // Fetch security settings
-  const { data: securitySettings, isLoading } = useQuery({
-    queryKey: ['security-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('app_settings')
-        .select('*')
-        .eq('setting_key', 'security_settings')
-        .single();
-      if (error) throw error;
-      return data.setting_value as SecuritySettingsType;
-    }
-  });
-
-  // Update security settings
-  const updateSecurityMutation = useMutation({
-    mutationFn: async (updatedSettings: SecuritySettingsType) => {
-      const { error } = await supabase
-        .from('app_settings')
-        .update({ 
-          setting_value: updatedSettings as any, 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('setting_key', 'security_settings');
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['security-settings'] });
-      toast({
-        title: "Security settings updated",
-        description: "Your security preferences have been saved successfully.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update security settings. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
+  const { securityQuery, updateSecurityMutation } = useSecuritySettings();
+  const { data: securitySettings, isLoading } = securityQuery;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const updatedSettings: SecuritySettingsType = {
+    const updatedSettings = {
       password_min_length: parseInt(formData.get('password_min_length') as string),
       require_2fa: securitySettings?.require_2fa || false,
       session_timeout: parseInt(formData.get('session_timeout') as string),

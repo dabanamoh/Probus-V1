@@ -1,14 +1,12 @@
 
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Palette, Upload, Eye, RotateCcw } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { useThemeSettings } from './hooks/useThemeSettings';
 
 interface ThemeColors {
   primary?: string;
@@ -18,63 +16,11 @@ interface ThemeColors {
   foreground?: string;
 }
 
-interface CompanyLogo {
-  url?: string;
-  alt?: string;
-}
-
-interface ThemeSettings {
-  theme_colors?: ThemeColors;
-  company_logo?: CompanyLogo;
-}
-
 const ThemeSettings = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { themeQuery, updateThemeMutation } = useThemeSettings();
   const [previewColors, setPreviewColors] = useState<ThemeColors | null>(null);
 
-  // Fetch current theme settings
-  const { data: themeSettings, isLoading } = useQuery({
-    queryKey: ['theme-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('app_settings')
-        .select('*')
-        .in('setting_key', ['theme_colors', 'company_logo']);
-      if (error) throw error;
-      
-      const settings: ThemeSettings = {};
-      data.forEach(setting => {
-        settings[setting.setting_key as keyof ThemeSettings] = setting.setting_value as any;
-      });
-      return settings;
-    }
-  });
-
-  // Update theme settings
-  const updateThemeMutation = useMutation({
-    mutationFn: async ({ key, value }: { key: string, value: any }) => {
-      const { error } = await supabase
-        .from('app_settings')
-        .update({ setting_value: value, updated_at: new Date().toISOString() })
-        .eq('setting_key', key);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['theme-settings'] });
-      toast({
-        title: "Theme updated",
-        description: "Your theme settings have been saved successfully.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update theme settings. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
+  const { data: themeSettings, isLoading } = themeQuery;
 
   const currentColors = previewColors || themeSettings?.theme_colors || {};
   const defaultColors: ThemeColors = {

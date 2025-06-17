@@ -1,74 +1,21 @@
 
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Building, MapPin, Phone, Mail } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
-
-interface CompanyInfo {
-  name?: string;
-  tagline?: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-  [key: string]: any;
-}
+import { useCompanySettings } from './hooks/useCompanySettings';
 
 const CompanySettings = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // Fetch company settings
-  const { data: companyInfo, isLoading } = useQuery({
-    queryKey: ['company-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('app_settings')
-        .select('*')
-        .eq('setting_key', 'company_info')
-        .single();
-      if (error) throw error;
-      return data.setting_value as CompanyInfo;
-    }
-  });
-
-  // Update company settings
-  const updateCompanyMutation = useMutation({
-    mutationFn: async (updatedInfo: CompanyInfo) => {
-      const { error } = await supabase
-        .from('app_settings')
-        .update({ 
-          setting_value: updatedInfo as any, 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('setting_key', 'company_info');
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['company-settings'] });
-      toast({
-        title: "Company information updated",
-        description: "Your company details have been saved successfully.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update company information. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
+  const { companyQuery, updateCompanyMutation } = useCompanySettings();
+  const { data: companyInfo, isLoading } = companyQuery;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const updatedInfo: CompanyInfo = {
+    const updatedInfo = {
       name: formData.get('name') as string,
       tagline: formData.get('tagline') as string,
       address: formData.get('address') as string,
