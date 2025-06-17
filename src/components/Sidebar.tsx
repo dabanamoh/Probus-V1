@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -11,7 +10,9 @@ import {
   MessageSquare,
   User,
   Settings,
-  Calendar
+  Calendar,
+  MessageCircle,
+  Brain
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -31,6 +32,8 @@ const Sidebar = ({ className }: SidebarProps) => {
     { icon: BarChart3, label: "KPI", path: "/kpi", active: location.pathname === "/kpi" },
     { icon: MessageSquare, label: "Feedbacks", path: "/feedbacks", active: location.pathname === "/feedbacks" },
     { icon: Calendar, label: "Events", path: "/events", active: location.pathname === "/events" },
+    { icon: MessageCircle, label: "Chat", path: "/chat", active: location.pathname === "/chat" },
+    { icon: Brain, label: "AI Analytics", path: "/ai-analytics", active: location.pathname === "/ai-analytics" },
   ];
 
   return (
