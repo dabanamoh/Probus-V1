@@ -34,7 +34,7 @@ export const useNotificationSettings = () => {
         .from('app_settings')
         .upsert({ 
           setting_key: 'notification_settings',
-          setting_value: updatedSettings,
+          setting_value: updatedSettings as any,
           category: 'notifications',
           description: 'Notification preferences',
           updated_at: new Date().toISOString() 

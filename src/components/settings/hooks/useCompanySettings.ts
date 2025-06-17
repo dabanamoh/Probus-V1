@@ -36,7 +36,7 @@ export const useCompanySettings = () => {
         .from('app_settings')
         .upsert({ 
           setting_key: 'company_info',
-          setting_value: updatedInfo,
+          setting_value: updatedInfo as any,
           category: 'company',
           description: 'Company information settings',
           updated_at: new Date().toISOString() 

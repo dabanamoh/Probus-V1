@@ -34,7 +34,7 @@ export const useSecuritySettings = () => {
         .from('app_settings')
         .upsert({ 
           setting_key: 'security_settings',
-          setting_value: updatedSettings,
+          setting_value: updatedSettings as any,
           category: 'security',
           description: 'Security configuration settings',
           updated_at: new Date().toISOString() 
