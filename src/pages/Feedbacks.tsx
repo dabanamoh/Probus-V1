@@ -27,7 +27,7 @@ interface Department {
   name: string;
 }
 
-interface Employee {
+interface EmployeeData {
   id: string;
   name: string;
   position: string | null;
@@ -36,7 +36,7 @@ interface Employee {
   department?: Department;
 }
 
-interface FeedbackType {
+interface FeedbackData {
   id: string;
   subject: string;
   message: string;
@@ -45,11 +45,11 @@ interface FeedbackType {
   status: string;
   created_at: string;
   employee_id: string;
-  employee: Employee;
+  employee: EmployeeData;
   department?: Department;
 }
 
-interface LeaveRequestType {
+interface LeaveRequestData {
   id: string;
   employee_id: string;
   leave_type: string;
@@ -62,11 +62,11 @@ interface LeaveRequestType {
   admin_notes: string | null;
   reviewed_at: string | null;
   reviewed_by: string | null;
-  employee: Employee;
+  employee: EmployeeData;
   department?: Department;
 }
 
-interface IncidentType {
+interface IncidentData {
   id: string;
   incident_type: string;
   description: string;
@@ -76,15 +76,15 @@ interface IncidentType {
   created_at: string;
   reporter_id: string;
   department_id: string | null;
-  employee: Employee;
+  employee: EmployeeData;
   department?: Department;
 }
 
 const Feedbacks = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackType | null>(null);
-  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequestType | null>(null);
-  const [selectedIncident, setSelectedIncident] = useState<IncidentType | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackData | null>(null);
+  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequestData | null>(null);
+  const [selectedIncident, setSelectedIncident] = useState<IncidentData | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -116,7 +116,7 @@ const Feedbacks = () => {
       return (data || []).filter(feedback => feedback.employee).map(feedback => ({
         ...feedback,
         department: feedback.employee?.department || null
-      })) as FeedbackType[];
+      })) as FeedbackData[];
     },
   });
 
@@ -147,7 +147,7 @@ const Feedbacks = () => {
       return (data || []).filter(request => request.employee).map(request => ({
         ...request,
         department: request.employee?.department || null
-      })) as LeaveRequestType[];
+      })) as LeaveRequestData[];
     },
   });
 
@@ -179,7 +179,7 @@ const Feedbacks = () => {
         ...incident,
         status: incident.status as 'pending' | 'resolved' | 'invalid',
         department: incident.employee?.department || null
-      })) as IncidentType[];
+      })) as IncidentData[];
     },
   });
 
@@ -394,7 +394,7 @@ const Feedbacks = () => {
                         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                           <DialogTitle>Feedback Details</DialogTitle>
                           {selectedFeedback && (
-                            <FeedbackDetails feedback={selectedFeedback} />
+                            <FeedbackDetails feedback={{ ...selectedFeedback, department: selectedFeedback.department || { id: '', name: '' } }} />
                           )}
                         </DialogContent>
                       </Dialog>
@@ -487,7 +487,7 @@ const Feedbacks = () => {
                           <DialogTitle>Leave Request Details</DialogTitle>
                           {selectedLeaveRequest && (
                             <LeaveRequestDetails 
-                              leaveRequest={selectedLeaveRequest}
+                              leaveRequest={{ ...selectedLeaveRequest, department: selectedLeaveRequest.department || { id: '', name: '' } }}
                               onStatusUpdate={(data) => 
                                 updateLeaveRequestMutation.mutate(data)
                               }
@@ -580,7 +580,7 @@ const Feedbacks = () => {
                         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                           <DialogTitle>Incident Details</DialogTitle>
                           {selectedIncident && (
-                            <IncidentDetails incident={selectedIncident} />
+                            <IncidentDetails incident={{ ...selectedIncident, employee: { ...selectedIncident.employee, department: selectedIncident.employee.department || { id: '', name: '' } }, department: selectedIncident.department || { id: '', name: '' } }} />
                           )}
                         </DialogContent>
                       </Dialog>
