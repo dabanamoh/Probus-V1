@@ -49,7 +49,7 @@ interface Feedback {
   created_at: string;
   employee_id: string;
   employee: Employee;
-  department?: Department; // Make this optional
+  department?: Department;
 }
 
 interface LeaveRequest {
@@ -73,7 +73,7 @@ interface Incident {
   id: string;
   incident_type: string;
   description: string;
-  status: string;
+  status: 'pending' | 'resolved' | 'invalid';
   date_reported: string;
   location: string | null;
   created_at: string;
@@ -153,7 +153,7 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return data?.filter(request => request.employee) as LeaveRequest[];
+      return data?.filter(request => request.employee && request.department) as LeaveRequest[];
     },
   });
 
@@ -184,19 +184,22 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return data as Incident[];
+      return data?.map(incident => ({
+        ...incident,
+        status: incident.status as 'pending' | 'resolved' | 'invalid'
+      })) as Incident[];
     },
   });
 
   const updateLeaveRequestMutation = useMutation({
-    mutationFn: async ({ id, status, adminNotes }: { id: string; status: string; adminNotes?: string }) => {
+    mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
       const { data, error } = await supabase
         .from('leave_requests')
         .update({
           status,
-          admin_notes: adminNotes || null,
+          admin_notes: notes || null,
           reviewed_at: new Date().toISOString(),
-          reviewed_by: 'admin' // This should be the actual admin user ID in a real app
+          reviewed_by: 'admin'
         })
         .eq('id', id)
         .select();
@@ -493,8 +496,8 @@ const Feedbacks = () => {
                           {selectedLeaveRequest && (
                             <LeaveRequestDetails 
                               leaveRequest={selectedLeaveRequest}
-                              onStatusUpdate={(id, status, adminNotes) => 
-                                updateLeaveRequestMutation.mutate({ id, status, adminNotes })
+                              onStatusUpdate={(data) => 
+                                updateLeaveRequestMutation.mutate(data)
                               }
                               isUpdating={updateLeaveRequestMutation.isPending}
                             />

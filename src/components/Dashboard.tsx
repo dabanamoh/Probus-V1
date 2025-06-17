@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   UserCheck, 
@@ -18,6 +19,8 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
   const kpiCards = [
     { title: "Total Numbers of Employees", value: "107", color: "bg-gradient-to-br from-blue-400 to-blue-600" },
     { title: "Employees On leave", value: "12", color: "bg-gradient-to-br from-blue-400 to-blue-600" },
@@ -35,6 +38,7 @@ const Dashboard = () => {
       subtitle: "View all notices sent to employees",
       color: "bg-gradient-to-br from-emerald-100 to-emerald-200",
       icon: Bell,
+      path: "/feedbacks",
       avatars: [
         { name: "User 1", image: "" },
         { name: "User 2", image: "" },
@@ -48,6 +52,7 @@ const Dashboard = () => {
       subtitle: "All leave applications and status",
       color: "bg-gradient-to-br from-orange-100 to-orange-200",
       icon: Calendar,
+      path: "/feedbacks",
       avatars: [
         { name: "User 1", image: "" },
         { name: "User 2", image: "" },
@@ -98,6 +103,12 @@ const Dashboard = () => {
     }
   ];
 
+  const handleCardClick = (path?: string) => {
+    if (path) {
+      navigate(path);
+    }
+  };
+
   return (
     <div className="flex-1 p-6 bg-gray-50 min-h-screen">
       <div className="mb-8">
@@ -126,7 +137,11 @@ const Dashboard = () => {
         {/* Secondary Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {secondaryCards.map((card, index) => (
-            <Card key={index} className={`${card.color} shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105 border-0`}>
+            <Card 
+              key={index} 
+              className={`${card.color} shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105 border-0`}
+              onClick={() => handleCardClick(card.path)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold text-gray-700 flex items-center gap-2">
