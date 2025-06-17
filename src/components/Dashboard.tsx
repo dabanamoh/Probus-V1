@@ -22,14 +22,14 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const kpiCards = [
-    { title: "Total Numbers of Employees", value: "107", color: "bg-gradient-to-br from-blue-400 to-blue-600" },
-    { title: "Employees On leave", value: "12", color: "bg-gradient-to-br from-blue-400 to-blue-600" },
-    { title: "Employees resigned", value: "5", color: "bg-gradient-to-br from-blue-400 to-blue-600" },
-    { title: "Total numbers of Managers", value: "5", color: "bg-gradient-to-br from-blue-400 to-blue-600" },
-    { title: "Total Number of Employees Incident reports", value: "429", color: "bg-gradient-to-br from-blue-400 to-blue-600" },
-    { title: "Total Employees Promoted", value: "7", color: "bg-gradient-to-br from-blue-400 to-blue-600" },
-    { title: "Total Employees Rewarded", value: "15", color: "bg-gradient-to-br from-blue-400 to-blue-600" },
-    { title: "Total Employees Punished", value: "15", color: "bg-gradient-to-br from-blue-400 to-blue-600" }
+    { title: "Total Numbers of Employees", value: "107", color: "bg-gradient-to-br from-blue-400 to-blue-600", path: "/employees" },
+    { title: "Employees On leave", value: "12", color: "bg-gradient-to-br from-blue-400 to-blue-600", path: "/feedbacks" },
+    { title: "Employees resigned", value: "5", color: "bg-gradient-to-br from-blue-400 to-blue-600", path: "/resignations" },
+    { title: "Total numbers of Managers", value: "5", color: "bg-gradient-to-br from-blue-400 to-blue-600", path: "/employees" },
+    { title: "Total Number of Employees Incident reports", value: "429", color: "bg-gradient-to-br from-blue-400 to-blue-600", path: "/feedbacks" },
+    { title: "Total Employees Promoted", value: "7", color: "bg-gradient-to-br from-blue-400 to-blue-600", path: "/employees" },
+    { title: "Total Employees Rewarded", value: "15", color: "bg-gradient-to-br from-blue-400 to-blue-600", path: "/rewards" },
+    { title: "Total Employees Punished", value: "15", color: "bg-gradient-to-br from-blue-400 to-blue-600", path: "/feedbacks" }
   ];
 
   const secondaryCards = [
@@ -66,6 +66,7 @@ const Dashboard = () => {
       subtitle: "Manage all employees access and assets Permission",
       color: "bg-gradient-to-br from-green-100 to-green-200",
       icon: Shield,
+      path: "/employees",
       avatars: [
         { name: "User 1", image: "" },
         { name: "User 2", image: "" },
@@ -79,6 +80,7 @@ const Dashboard = () => {
       subtitle: "Maintain Employees salary slip",
       color: "bg-gradient-to-br from-pink-100 to-pink-200",
       icon: CreditCard,
+      path: "/employees",
       avatars: []
     },
     {
@@ -86,6 +88,7 @@ const Dashboard = () => {
       subtitle: "Employees Attendance List",
       color: "bg-gradient-to-br from-cyan-100 to-cyan-200",
       icon: Gift,
+      path: "/employees",
       avatars: [
         { name: "User 1", image: "" },
         { name: "User 2", image: "" },
@@ -99,6 +102,7 @@ const Dashboard = () => {
       subtitle: "Holidays in the calendar year",
       color: "bg-gradient-to-br from-purple-100 to-purple-200",
       icon: Calendar,
+      path: "/kpi",
       avatars: []
     }
   ];
@@ -125,7 +129,11 @@ const Dashboard = () => {
         {/* KPI Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {kpiCards.map((card, index) => (
-            <Card key={index} className={`${card.color} text-white shadow-lg hover:shadow-xl transition-shadow duration-300 border-0`}>
+            <Card 
+              key={index} 
+              className={`${card.color} text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 cursor-pointer hover:scale-105`}
+              onClick={() => handleCardClick(card.path)}
+            >
               <CardContent className="p-6">
                 <div className="text-sm opacity-90 mb-2">{card.title}</div>
                 <div className="text-3xl font-bold">{card.value}</div>

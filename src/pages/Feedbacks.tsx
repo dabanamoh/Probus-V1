@@ -104,11 +104,7 @@ const Feedbacks = () => {
             name,
             position,
             profile_image_url,
-            department_id,
-            department:departments!employees_department_id_fkey(
-              id,
-              name
-            )
+            department_id
           )
         `);
 
@@ -119,10 +115,7 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return data?.map(feedback => ({
-        ...feedback,
-        department: feedback.employee?.department || undefined
-      })) as Feedback[];
+      return data as Feedback[];
     },
   });
 
@@ -140,7 +133,7 @@ const Feedbacks = () => {
             profile_image_url,
             department_id
           ),
-          department:departments!inner(
+          department:departments(
             id,
             name
           )
@@ -153,7 +146,7 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return data?.filter(request => request.employee && request.department) as LeaveRequest[];
+      return (data || []).filter(request => request.employee && request.department) as LeaveRequest[];
     },
   });
 
@@ -184,7 +177,7 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return data?.map(incident => ({
+      return (data || []).map(incident => ({
         ...incident,
         status: incident.status as 'pending' | 'resolved' | 'invalid'
       })) as Incident[];
