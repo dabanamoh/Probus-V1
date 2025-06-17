@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { MessageSquare } from 'lucide-react';
 import ChatHeader from './ChatHeader';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
