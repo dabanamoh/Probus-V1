@@ -70,7 +70,7 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
     certifications: employee.certifications || '',
     
     // Department and Job Info
-    departmentId: employee.department_id || '',
+    departmentId: employee.department_id || 'none',
     jobDescription: employee.job_description || '',
     dateOfResumption: employee.date_of_resumption || '',
     
@@ -101,7 +101,7 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
         .update({
           name: fullName,
           position: employeeData.position,
-          department_id: employeeData.departmentId || null,
+          department_id: employeeData.departmentId === 'none' ? null : employeeData.departmentId,
           level: employeeData.level,
           qualification: employeeData.qualification,
           certifications: employeeData.certifications,
@@ -386,7 +386,7 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Department</SelectItem>
+                      <SelectItem value="none">No Department</SelectItem>
                       {departments?.map((department) => (
                         <SelectItem key={department.id} value={department.id}>
                           {department.name}
