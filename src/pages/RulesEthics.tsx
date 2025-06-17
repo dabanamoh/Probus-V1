@@ -1,10 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { 
   Shield, 
   Scale, 
@@ -13,10 +16,61 @@ import {
   Lock, 
   AlertTriangle,
   FileText,
-  Gavel
+  Gavel,
+  Edit,
+  Save,
+  Plus,
+  X
 } from 'lucide-react';
 
 const RulesEthics = () => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [companyValues, setCompanyValues] = useState([
+    { title: "Integrity", description: "We act with honesty, transparency, and ethical behavior in all our interactions.", color: "blue" },
+    { title: "Respect", description: "We treat all individuals with dignity, fairness, and consideration.", color: "green" },
+    { title: "Excellence", description: "We strive for the highest standards in everything we do.", color: "purple" },
+    { title: "Accountability", description: "We take responsibility for our actions and their consequences.", color: "orange" },
+    { title: "Innovation", description: "We embrace change and continuously seek to improve and innovate.", color: "teal" },
+    { title: "Collaboration", description: "We work together to achieve common goals and support each other.", color: "indigo" }
+  ]);
+  
+  const [customPolicies, setCustomPolicies] = useState([
+    { title: "Remote Work Policy", description: "Guidelines for working from home and flexible arrangements" },
+    { title: "Social Media Policy", description: "Professional conduct on social media platforms" }
+  ]);
+
+  const [ethicsHotline, setEthicsHotline] = useState("1-800-ETHICS");
+  const [hrEmail, setHrEmail] = useState("hr@company.com");
+  const [companyMission, setCompanyMission] = useState("Enter your company mission statement here...");
+
+  const addNewValue = () => {
+    setCompanyValues([...companyValues, { title: "New Value", description: "Enter description...", color: "gray" }]);
+  };
+
+  const updateValue = (index: number, field: string, value: string) => {
+    const updated = [...companyValues];
+    updated[index] = { ...updated[index], [field]: value };
+    setCompanyValues(updated);
+  };
+
+  const removeValue = (index: number) => {
+    setCompanyValues(companyValues.filter((_, i) => i !== index));
+  };
+
+  const addNewPolicy = () => {
+    setCustomPolicies([...customPolicies, { title: "New Policy", description: "Enter policy description..." }]);
+  };
+
+  const updatePolicy = (index: number, field: string, value: string) => {
+    const updated = [...customPolicies];
+    updated[index] = { ...updated[index], [field]: value };
+    setCustomPolicies(updated);
+  };
+
+  const removePolicy = (index: number) => {
+    setCustomPolicies(customPolicies.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50 w-full">
       <Sidebar />
@@ -24,15 +78,47 @@ const RulesEthics = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Scale className="w-6 h-6 text-blue-600" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Scale className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Rules & Ethics</h1>
+                  <p className="text-gray-600">Company policies, ethical guidelines, and compliance standards</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Rules & Ethics</h1>
-                <p className="text-gray-600">Company policies, ethical guidelines, and compliance standards</p>
-              </div>
+              <Button
+                onClick={() => setIsEditing(!isEditing)}
+                variant={isEditing ? "default" : "outline"}
+                className="flex items-center gap-2"
+              >
+                {isEditing ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                {isEditing ? "Save Changes" : "Edit Content"}
+              </Button>
             </div>
+            
+            {/* Editable Company Mission */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Company Mission & Values Statement</CardTitle>
+                <CardDescription>Customize your organization's mission and values</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isEditing ? (
+                  <Textarea
+                    value={companyMission}
+                    onChange={(e) => setCompanyMission(e.target.value)}
+                    placeholder="Enter your company mission statement..."
+                    className="min-h-[100px]"
+                  />
+                ) : (
+                  <p className="text-gray-700 italic bg-gray-50 p-4 rounded-lg">
+                    {companyMission}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           <Tabs defaultValue="code-of-conduct" className="w-full">
@@ -46,56 +132,58 @@ const RulesEthics = () => {
             <TabsContent value="code-of-conduct" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-red-500" />
-                    Core Values & Principles
-                  </CardTitle>
-                  <CardDescription>
-                    Fundamental principles that guide our behavior and decision-making
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Heart className="w-5 h-5 text-red-500" />
+                        Core Values & Principles
+                      </CardTitle>
+                      <CardDescription>
+                        Fundamental principles that guide our behavior and decision-making
+                      </CardDescription>
+                    </div>
+                    {isEditing && (
+                      <Button onClick={addNewValue} size="sm" variant="outline">
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <h3 className="font-semibold text-blue-900 mb-2">Integrity</h3>
-                        <p className="text-blue-700 text-sm">
-                          We act with honesty, transparency, and ethical behavior in all our interactions.
-                        </p>
+                    {companyValues.map((value, index) => (
+                      <div key={index} className={`p-4 bg-${value.color}-50 rounded-lg relative`}>
+                        {isEditing && (
+                          <Button
+                            onClick={() => removeValue(index)}
+                            size="sm"
+                            variant="ghost"
+                            className="absolute top-2 right-2 h-6 w-6 p-0"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        )}
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <Input
+                              value={value.title}
+                              onChange={(e) => updateValue(index, 'title', e.target.value)}
+                              className="font-semibold"
+                            />
+                            <Textarea
+                              value={value.description}
+                              onChange={(e) => updateValue(index, 'description', e.target.value)}
+                              className="text-sm"
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            <h3 className={`font-semibold text-${value.color}-900 mb-2`}>{value.title}</h3>
+                            <p className={`text-${value.color}-700 text-sm`}>{value.description}</p>
+                          </>
+                        )}
                       </div>
-                      <div className="p-4 bg-green-50 rounded-lg">
-                        <h3 className="font-semibold text-green-900 mb-2">Respect</h3>
-                        <p className="text-green-700 text-sm">
-                          We treat all individuals with dignity, fairness, and consideration.
-                        </p>
-                      </div>
-                      <div className="p-4 bg-purple-50 rounded-lg">
-                        <h3 className="font-semibold text-purple-900 mb-2">Excellence</h3>
-                        <p className="text-purple-700 text-sm">
-                          We strive for the highest standards in everything we do.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-orange-50 rounded-lg">
-                        <h3 className="font-semibold text-orange-900 mb-2">Accountability</h3>
-                        <p className="text-orange-700 text-sm">
-                          We take responsibility for our actions and their consequences.
-                        </p>
-                      </div>
-                      <div className="p-4 bg-teal-50 rounded-lg">
-                        <h3 className="font-semibold text-teal-900 mb-2">Innovation</h3>
-                        <p className="text-teal-700 text-sm">
-                          We embrace change and continuously seek to improve and innovate.
-                        </p>
-                      </div>
-                      <div className="p-4 bg-indigo-50 rounded-lg">
-                        <h3 className="font-semibold text-indigo-900 mb-2">Collaboration</h3>
-                        <p className="text-indigo-700 text-sm">
-                          We work together to achieve common goals and support each other.
-                        </p>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -133,6 +221,15 @@ const RulesEthics = () => {
                       </div>
                     </div>
                   </div>
+                  
+                  {isEditing && (
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Admin Note:</strong> You can customize these workplace conduct rules by editing this section. 
+                        Consider adding company-specific policies like dress code, attendance requirements, or technology usage guidelines.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -243,6 +340,64 @@ const RulesEthics = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Custom Policies Section */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Custom Company Policies</CardTitle>
+                      <CardDescription>Add your organization-specific policies</CardDescription>
+                    </div>
+                    {isEditing && (
+                      <Button onClick={addNewPolicy} size="sm" variant="outline">
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {customPolicies.map((policy, index) => (
+                    <div key={index} className="p-4 border rounded-lg relative">
+                      {isEditing && (
+                        <Button
+                          onClick={() => removePolicy(index)}
+                          size="sm"
+                          variant="ghost"
+                          className="absolute top-2 right-2 h-6 w-6 p-0"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      )}
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <Input
+                            value={policy.title}
+                            onChange={(e) => updatePolicy(index, 'title', e.target.value)}
+                            className="font-semibold"
+                          />
+                          <Textarea
+                            value={policy.description}
+                            onChange={(e) => updatePolicy(index, 'description', e.target.value)}
+                            className="text-sm"
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <h3 className="font-semibold mb-2">{policy.title}</h3>
+                          <p className="text-sm text-gray-600">{policy.description}</p>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {customPolicies.length === 0 && !isEditing && (
+                    <p className="text-gray-500 italic text-center py-8">
+                      No custom policies added yet. Click "Edit Content" to add company-specific policies.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="compliance" className="space-y-6">
@@ -287,6 +442,15 @@ const RulesEthics = () => {
                       </div>
                     </div>
                   </div>
+                  
+                  {isEditing && (
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>Admin Note:</strong> Customize this section with your industry-specific compliance requirements. 
+                        Consider adding regulations like HIPAA (healthcare), SOX (finance), or OSHA (workplace safety).
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -320,11 +484,29 @@ const RulesEthics = () => {
                         </div>
                         <div className="p-3 border rounded-lg">
                           <p className="font-medium text-sm">HR Department</p>
-                          <p className="text-xs text-gray-600">Contact Human Resources at hr@company.com</p>
+                          {isEditing ? (
+                            <Input
+                              value={hrEmail}
+                              onChange={(e) => setHrEmail(e.target.value)}
+                              className="text-xs mt-1"
+                              placeholder="hr@company.com"
+                            />
+                          ) : (
+                            <p className="text-xs text-gray-600">Contact Human Resources at {hrEmail}</p>
+                          )}
                         </div>
                         <div className="p-3 border rounded-lg">
                           <p className="font-medium text-sm">Ethics Hotline</p>
-                          <p className="text-xs text-gray-600">Call 1-800-ETHICS (24/7 confidential)</p>
+                          {isEditing ? (
+                            <Input
+                              value={ethicsHotline}
+                              onChange={(e) => setEthicsHotline(e.target.value)}
+                              className="text-xs mt-1"
+                              placeholder="1-800-ETHICS"
+                            />
+                          ) : (
+                            <p className="text-xs text-gray-600">Call {ethicsHotline} (24/7 confidential)</p>
+                          )}
                         </div>
                         <div className="p-3 border rounded-lg">
                           <p className="font-medium text-sm">Anonymous Portal</p>
@@ -360,6 +542,15 @@ const RulesEthics = () => {
                       </div>
                     </div>
                   </div>
+                  
+                  {isEditing && (
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Admin Note:</strong> Update the contact information above with your organization's specific details. 
+                        Consider adding additional reporting channels or local compliance requirements.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
