@@ -10,10 +10,28 @@ import { Separator } from "@/components/ui/separator";
 import { Palette, Upload, Eye, RotateCcw } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
+interface ThemeColors {
+  primary?: string;
+  secondary?: string;
+  accent?: string;
+  background?: string;
+  foreground?: string;
+}
+
+interface CompanyLogo {
+  url?: string;
+  alt?: string;
+}
+
+interface ThemeSettings {
+  theme_colors?: ThemeColors;
+  company_logo?: CompanyLogo;
+}
+
 const ThemeSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [previewColors, setPreviewColors] = useState<any>(null);
+  const [previewColors, setPreviewColors] = useState<ThemeColors | null>(null);
 
   // Fetch current theme settings
   const { data: themeSettings, isLoading } = useQuery({
@@ -25,9 +43,9 @@ const ThemeSettings = () => {
         .in('setting_key', ['theme_colors', 'company_logo']);
       if (error) throw error;
       
-      const settings: any = {};
+      const settings: ThemeSettings = {};
       data.forEach(setting => {
-        settings[setting.setting_key] = setting.setting_value;
+        settings[setting.setting_key as keyof ThemeSettings] = setting.setting_value as any;
       });
       return settings;
     }
@@ -59,7 +77,7 @@ const ThemeSettings = () => {
   });
 
   const currentColors = previewColors || themeSettings?.theme_colors || {};
-  const defaultColors = {
+  const defaultColors: ThemeColors = {
     primary: "#3b82f6",
     secondary: "#64748b", 
     accent: "#10b981",

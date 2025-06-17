@@ -10,6 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Building, MapPin, Phone, Mail } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
+interface CompanyInfo {
+  name?: string;
+  tagline?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+}
+
 const CompanySettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -24,13 +32,13 @@ const CompanySettings = () => {
         .eq('setting_key', 'company_info')
         .single();
       if (error) throw error;
-      return data.setting_value;
+      return data.setting_value as CompanyInfo;
     }
   });
 
   // Update company settings
   const updateCompanyMutation = useMutation({
-    mutationFn: async (updatedInfo: any) => {
+    mutationFn: async (updatedInfo: CompanyInfo) => {
       const { error } = await supabase
         .from('app_settings')
         .update({ 
@@ -59,7 +67,7 @@ const CompanySettings = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const updatedInfo = {
+    const updatedInfo: CompanyInfo = {
       name: formData.get('name') as string,
       tagline: formData.get('tagline') as string,
       address: formData.get('address') as string,

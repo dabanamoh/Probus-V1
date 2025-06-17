@@ -10,6 +10,12 @@ import { Separator } from "@/components/ui/separator";
 import { Bell, Mail, MessageSquare, AlertTriangle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
+interface NotificationSettings {
+  email_notifications?: boolean;
+  push_notifications?: boolean;
+  sms_notifications?: boolean;
+}
+
 const NotificationSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -24,13 +30,13 @@ const NotificationSettings = () => {
         .eq('setting_key', 'notification_settings')
         .single();
       if (error) throw error;
-      return data.setting_value;
+      return data.setting_value as NotificationSettings;
     }
   });
 
   // Update notification settings
   const updateNotificationMutation = useMutation({
-    mutationFn: async (updatedSettings: any) => {
+    mutationFn: async (updatedSettings: NotificationSettings) => {
       const { error } = await supabase
         .from('app_settings')
         .update({ 
@@ -59,7 +65,7 @@ const NotificationSettings = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const updatedSettings = {
+    const updatedSettings: NotificationSettings = {
       email_notifications: formData.get('email_notifications') === 'on',
       push_notifications: formData.get('push_notifications') === 'on',
       sms_notifications: formData.get('sms_notifications') === 'on',

@@ -13,10 +13,12 @@ import { Separator } from "@/components/ui/separator";
 import { Shield, Users, Plus, Trash2, Edit } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
+type AppRole = 'admin' | 'manager' | 'hr' | 'employee';
+
 const PermissionsSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedRole, setSelectedRole] = useState<string>('manager');
+  const [selectedRole, setSelectedRole] = useState<AppRole>('manager');
 
   // Fetch permissions
   const { data: permissions, isLoading: permissionsLoading } = useQuery({
@@ -129,7 +131,7 @@ const PermissionsSettings = () => {
             </h3>
             <p className="text-sm text-gray-600">Configure what each role can access and manage</p>
           </div>
-          <Select value={selectedRole} onValueChange={setSelectedRole}>
+          <Select value={selectedRole} onValueChange={(value: AppRole) => setSelectedRole(value)}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
@@ -184,7 +186,7 @@ const PermissionsSettings = () => {
           Role Overview
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {['admin', 'manager', 'hr', 'employee'].map((role) => (
+          {(['admin', 'manager', 'hr', 'employee'] as AppRole[]).map((role) => (
             <Card key={role} className={`cursor-pointer transition-all ${selectedRole === role ? 'ring-2 ring-blue-500' : ''}`} onClick={() => setSelectedRole(role)}>
               <CardContent className="p-4">
                 <div className="font-semibold capitalize mb-2">{role}</div>

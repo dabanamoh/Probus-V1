@@ -11,6 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Shield, Lock, Clock, Key } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
+interface SecuritySettings {
+  password_min_length?: number;
+  require_2fa?: boolean;
+  session_timeout?: number;
+}
+
 const SecuritySettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -25,13 +31,13 @@ const SecuritySettings = () => {
         .eq('setting_key', 'security_settings')
         .single();
       if (error) throw error;
-      return data.setting_value;
+      return data.setting_value as SecuritySettings;
     }
   });
 
   // Update security settings
   const updateSecurityMutation = useMutation({
-    mutationFn: async (updatedSettings: any) => {
+    mutationFn: async (updatedSettings: SecuritySettings) => {
       const { error } = await supabase
         .from('app_settings')
         .update({ 
@@ -60,7 +66,7 @@ const SecuritySettings = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const updatedSettings = {
+    const updatedSettings: SecuritySettings = {
       password_min_length: parseInt(formData.get('password_min_length') as string),
       require_2fa: formData.get('require_2fa') === 'on',
       session_timeout: parseInt(formData.get('session_timeout') as string),
