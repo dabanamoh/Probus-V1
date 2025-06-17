@@ -18,7 +18,8 @@ export const usePermissions = () => {
         const { data, error } = await supabase
           .from('permissions')
           .select('*')
-          .order('category', { ascending: true });
+          .order('category', { ascending: true })
+          .order('name', { ascending: true });
         
         console.log('Permissions query result:', { data, error });
         
@@ -27,7 +28,7 @@ export const usePermissions = () => {
           throw error;
         }
         
-        return data;
+        return data || [];
       } catch (err) {
         console.error('Error in permissions query:', err);
         throw err;
@@ -35,7 +36,57 @@ export const usePermissions = () => {
     }
   });
 
-  // Fetch role permissions
+  // Fetch all role permissions at once
+  const allRolePermissionsQuery = useQuery({
+    queryKey: ['all-role-permissions'],
+    queryFn: async () => {
+      console.log('Fetching all role permissions...');
+      try {
+        const { data, error } = await supabase
+          .from('role_permissions')
+          .select(`
+            id,
+            role,
+            permission_id,
+            permissions (
+              id,
+              name,
+              description,
+              category
+            )
+          `);
+        
+        console.log('All role permissions query result:', { data, error });
+        
+        if (error) {
+          console.error('All role permissions query error:', error);
+          throw error;
+        }
+        
+        // Group by role
+        const groupedByRole: { [key in AppRole]: any[] } = {
+          admin: [],
+          manager: [],
+          hr: [],
+          employee: []
+        };
+        
+        data?.forEach((rolePermission) => {
+          if (rolePermission.role && groupedByRole[rolePermission.role as AppRole]) {
+            groupedByRole[rolePermission.role as AppRole].push(rolePermission);
+          }
+        });
+        
+        console.log('Grouped role permissions:', groupedByRole);
+        return groupedByRole;
+      } catch (err) {
+        console.error('Error in all role permissions query:', err);
+        throw err;
+      }
+    }
+  });
+
+  // Fetch role permissions for specific role (kept for compatibility)
   const getRolePermissionsQuery = (selectedRole: AppRole) => useQuery({
     queryKey: ['role-permissions', selectedRole],
     queryFn: async () => {
@@ -62,24 +113,11 @@ export const usePermissions = () => {
           throw error;
         }
         
-        return data;
+        return data || [];
       } catch (err) {
         console.error('Error in role permissions query:', err);
         throw err;
       }
-    }
-  });
-
-  // Fetch employees for role assignment
-  const employeesQuery = useQuery({
-    queryKey: ['employees-for-roles'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('id, name')
-        .order('name');
-      if (error) throw error;
-      return data;
     }
   });
 
@@ -119,6 +157,7 @@ export const usePermissions = () => {
     onSuccess: () => {
       console.log('Permission toggle successful');
       queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
+      queryClient.invalidateQueries({ queryKey: ['all-role-permissions'] });
       toast({
         title: "Permission updated",
         description: "Role permissions have been updated successfully.",
@@ -136,8 +175,8 @@ export const usePermissions = () => {
 
   return {
     permissionsQuery,
+    allRolePermissionsQuery,
     getRolePermissionsQuery,
-    employeesQuery,
     togglePermissionMutation
   };
 };
