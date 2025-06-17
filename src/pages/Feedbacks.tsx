@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -580,7 +579,7 @@ const Feedbacks = () => {
                         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                           <DialogTitle>Incident Details</DialogTitle>
                           {selectedIncident && (
-                            <IncidentDetails incident={{ ...selectedIncident, employee: { ...selectedIncident.employee, department: selectedIncident.employee.department || { id: '', name: '' } }, department: selectedIncident.department || { id: '', name: '' } }} />
+                            <IncidentDetails incident={{ ...selectedIncident, employee: { ...selectedIncident.employee, department: selectedIncident.employee.department || { id: '', name: '' } } }} />
                           )}
                         </DialogContent>
                       </Dialog>
