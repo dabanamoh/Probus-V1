@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -113,13 +112,20 @@ const Dashboard = () => {
     }
   };
 
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  };
+
   return (
     <div className="flex-1 p-6 bg-gray-50 min-h-screen">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-gray-800">ADMIN Dashboard</h1>
           <div className="flex items-center space-x-4">
-            <Settings className="w-6 h-6 text-gray-600 cursor-pointer hover:text-gray-800 transition-colors" />
+            <Settings 
+              className="w-6 h-6 text-gray-600 cursor-pointer hover:text-gray-800 transition-colors" 
+              onClick={handleSettingsClick}
+            />
             <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
               <span className="text-gray-600 font-medium text-sm">⏻</span>
             </div>
