@@ -30,13 +30,13 @@ interface Department {
 interface Employee {
   id: string;
   name: string;
-  position: string;
-  profile_image_url: string;
-  department_id: string;
+  position: string | null;
+  profile_image_url: string | null;
+  department_id: string | null;
   department?: Department;
 }
 
-interface Feedback {
+interface FeedbackType {
   id: string;
   subject: string;
   message: string;
@@ -49,7 +49,7 @@ interface Feedback {
   department?: Department;
 }
 
-interface LeaveRequest {
+interface LeaveRequestType {
   id: string;
   employee_id: string;
   leave_type: string;
@@ -66,7 +66,7 @@ interface LeaveRequest {
   department?: Department;
 }
 
-interface Incident {
+interface IncidentType {
   id: string;
   incident_type: string;
   description: string;
@@ -82,9 +82,9 @@ interface Incident {
 
 const Feedbacks = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
-  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null);
-  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackType | null>(null);
+  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequestType | null>(null);
+  const [selectedIncident, setSelectedIncident] = useState<IncidentType | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -116,7 +116,7 @@ const Feedbacks = () => {
       return (data || []).filter(feedback => feedback.employee).map(feedback => ({
         ...feedback,
         department: feedback.employee?.department || null
-      })) as Feedback[];
+      })) as FeedbackType[];
     },
   });
 
@@ -147,7 +147,7 @@ const Feedbacks = () => {
       return (data || []).filter(request => request.employee).map(request => ({
         ...request,
         department: request.employee?.department || null
-      })) as LeaveRequest[];
+      })) as LeaveRequestType[];
     },
   });
 
@@ -179,7 +179,7 @@ const Feedbacks = () => {
         ...incident,
         status: incident.status as 'pending' | 'resolved' | 'invalid',
         department: incident.employee?.department || null
-      })) as Incident[];
+      })) as IncidentType[];
     },
   });
 
