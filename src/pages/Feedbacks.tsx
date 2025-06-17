@@ -22,17 +22,18 @@ import LeaveRequestDetails from '@/components/LeaveRequestDetails';
 import IncidentDetails from '@/components/IncidentDetails';
 import { useToast } from '@/hooks/use-toast';
 
+interface Department {
+  id: string;
+  name: string;
+}
+
 interface Employee {
   id: string;
   name: string;
   position: string;
   profile_image_url: string;
   department_id: string;
-}
-
-interface Department {
-  id: string;
-  name: string;
+  department?: Department;
 }
 
 interface Feedback {
@@ -45,6 +46,7 @@ interface Feedback {
   created_at: string;
   employee_id: string;
   employee: Employee;
+  department?: Department;
 }
 
 interface LeaveRequest {
@@ -61,6 +63,7 @@ interface LeaveRequest {
   reviewed_at: string | null;
   reviewed_by: string | null;
   employee: Employee;
+  department?: Department;
 }
 
 interface Incident {
@@ -74,6 +77,7 @@ interface Incident {
   reporter_id: string;
   department_id: string | null;
   employee: Employee;
+  department?: Department;
 }
 
 const Feedbacks = () => {
@@ -97,7 +101,8 @@ const Feedbacks = () => {
             name,
             position,
             profile_image_url,
-            department_id
+            department_id,
+            department:departments(id, name)
           )
         `);
 
@@ -108,7 +113,10 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return (data || []).filter(feedback => feedback.employee) as Feedback[];
+      return (data || []).filter(feedback => feedback.employee).map(feedback => ({
+        ...feedback,
+        department: feedback.employee?.department || null
+      })) as Feedback[];
     },
   });
 
@@ -124,7 +132,8 @@ const Feedbacks = () => {
             name,
             position,
             profile_image_url,
-            department_id
+            department_id,
+            department:departments(id, name)
           )
         `);
 
@@ -135,7 +144,10 @@ const Feedbacks = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return (data || []).filter(request => request.employee) as LeaveRequest[];
+      return (data || []).filter(request => request.employee).map(request => ({
+        ...request,
+        department: request.employee?.department || null
+      })) as LeaveRequest[];
     },
   });
 
@@ -151,7 +163,8 @@ const Feedbacks = () => {
             name,
             position,
             profile_image_url,
-            department_id
+            department_id,
+            department:departments(id, name)
           )
         `);
 
@@ -164,7 +177,8 @@ const Feedbacks = () => {
       
       return (data || []).filter(incident => incident.employee).map(incident => ({
         ...incident,
-        status: incident.status as 'pending' | 'resolved' | 'invalid'
+        status: incident.status as 'pending' | 'resolved' | 'invalid',
+        department: incident.employee?.department || null
       })) as Incident[];
     },
   });
