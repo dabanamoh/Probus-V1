@@ -10,6 +10,7 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import ConversationItem from './ConversationItem';
+import { useConversations } from '@/hooks/useConversations';
 
 interface ChatSidebarProps {
   activeConversationId?: string;
@@ -18,55 +19,23 @@ interface ChatSidebarProps {
 
 const ChatSidebar = ({ activeConversationId, onConversationSelect }: ChatSidebarProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-
-  const conversations = [
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      lastMessage: 'Hey! How are you doing today?',
-      time: '2m',
-      initials: 'SJ',
-      unreadCount: 2,
-      isOnline: true
-    },
-    {
-      id: '2',
-      name: 'Olatunde Adeyemi Tuga',
-      lastMessage: '[File] Spark 40 OOH kv Extension SA...',
-      time: '15m',
-      initials: 'OA',
-      isOnline: false
-    },
-    {
-      id: '3',
-      name: 'Team Design',
-      lastMessage: 'Mike: Great work on the new designs!',
-      time: '1h',
-      initials: 'TD',
-      unreadCount: 5,
-      isOnline: true
-    },
-    {
-      id: '4',
-      name: 'Adebayo Isaac',
-      lastMessage: '[Image]',
-      time: '2h',
-      initials: 'AI',
-      isOnline: true
-    },
-    {
-      id: '5',
-      name: 'Henry Amusah',
-      lastMessage: 'Ok, sounds good to me',
-      time: '1d',
-      initials: 'HA',
-      isOnline: false
-    }
-  ];
+  const { conversations, loading } = useConversations();
 
   const filteredConversations = conversations.filter(conv =>
     conv.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  if (loading) {
+    return (
+      <div className="w-80 bg-white border-r border-gray-200 flex items-center justify-center">
+        <div className="text-gray-500">Loading conversations...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-screen">
@@ -123,12 +92,11 @@ const ChatSidebar = ({ activeConversationId, onConversationSelect }: ChatSidebar
               key={conversation.id}
               id={conversation.id}
               name={conversation.name}
-              lastMessage={conversation.lastMessage}
-              time={conversation.time}
-              initials={conversation.initials}
-              unreadCount={conversation.unreadCount}
+              lastMessage="Click to start chatting..."
+              time="now"
+              initials={getInitials(conversation.name)}
               isActive={activeConversationId === conversation.id}
-              isOnline={conversation.isOnline}
+              isOnline={Math.random() > 0.5} // Random online status for demo
               onClick={onConversationSelect}
             />
           ))}

@@ -390,6 +390,27 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       data_processing_logs: {
         Row: {
           action_type: string
@@ -704,6 +725,53 @@ export type Database = {
             columns: ["reviewed_by"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          file_name: string | null
+          file_size: string | null
+          id: string
+          is_own: boolean | null
+          message: string
+          message_type: string | null
+          sender_initials: string
+          sender_name: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          file_name?: string | null
+          file_size?: string | null
+          id?: string
+          is_own?: boolean | null
+          message: string
+          message_type?: string | null
+          sender_initials: string
+          sender_name: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          file_name?: string | null
+          file_size?: string | null
+          id?: string
+          is_own?: boolean | null
+          message?: string
+          message_type?: string | null
+          sender_initials?: string
+          sender_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]

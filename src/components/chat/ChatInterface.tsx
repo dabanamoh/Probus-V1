@@ -1,57 +1,28 @@
 
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { MessageSquare } from 'lucide-react';
 import ChatHeader from './ChatHeader';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
+import { useMessages } from '@/hooks/useMessages';
+import { useConversations } from '@/hooks/useConversations';
 
 interface ChatInterfaceProps {
   conversationId?: string;
 }
 
 const ChatInterface = ({ conversationId }: ChatInterfaceProps) => {
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      message: 'Hey! How are you doing today?',
-      time: '2:30 PM',
-      isOwn: false,
-      senderName: 'Sarah Johnson',
-      senderInitials: 'SJ'
-    },
-    {
-      id: '2',
-      message: 'I\'m doing great, thanks for asking! How about you?',
-      time: '2:32 PM',
-      isOwn: true
-    },
-    {
-      id: '3',
-      message: 'Spark 40 OOH kv Extension SAMPLE.cdr',
-      time: '2:35 PM',
-      isOwn: false,
-      senderName: 'Sarah Johnson',
-      senderInitials: 'SJ',
-      type: 'file' as const,
-      fileName: 'Spark 40 OOH kv Extension SAMPLE.cdr',
-      fileSize: '585.0 MB'
-    },
-    {
-      id: '4',
-      message: 'Thanks for sharing that file! I\'ll review it shortly.',
-      time: '2:36 PM',
-      isOwn: true
-    }
-  ]);
+  const { messages, loading, sendMessage } = useMessages(conversationId);
+  const { conversations } = useConversations();
+  
+  const currentConversation = conversations.find(conv => conv.id === conversationId);
 
   const handleSendMessage = (message: string) => {
-    const newMessage = {
-      id: Date.now().toString(),
-      message,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isOwn: true
-    };
-    setMessages(prev => [...prev, newMessage]);
+    sendMessage(message);
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
   if (!conversationId) {
@@ -68,11 +39,22 @@ const ChatInterface = ({ conversationId }: ChatInterfaceProps) => {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-gray-50">
+        <div className="text-gray-500">Loading messages...</div>
+      </div>
+    );
+  }
+
+  const conversationName = currentConversation?.name || 'Unknown';
+  const contactInitials = getInitials(conversationName);
+
   return (
     <div className="flex-1 flex flex-col bg-gray-50">
       <ChatHeader 
-        contactName="Sarah Johnson"
-        contactInitials="SJ"
+        contactName={conversationName}
+        contactInitials={contactInitials}
         status="online"
       />
       
@@ -89,13 +71,16 @@ const ChatInterface = ({ conversationId }: ChatInterfaceProps) => {
             <MessageBubble
               key={message.id}
               message={message.message}
-              time={message.time}
-              isOwn={message.isOwn}
-              senderName={message.senderName}
-              senderInitials={message.senderInitials}
-              type={message.type}
-              fileName={message.fileName}
-              fileSize={message.fileSize}
+              time={new Date(message.created_at).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
+              isOwn={message.is_own}
+              senderName={message.is_own ? undefined : message.sender_name}
+              senderInitials={message.is_own ? undefined : message.sender_initials}
+              type={message.message_type as 'text' | 'file' | 'image'}
+              fileName={message.file_name || undefined}
+              fileSize={message.file_size || undefined}
             />
           ))}
         </div>
@@ -103,7 +88,7 @@ const ChatInterface = ({ conversationId }: ChatInterfaceProps) => {
       
       <ChatInput 
         onSendMessage={handleSendMessage}
-        placeholder="Type a message to Sarah..."
+        placeholder={`Type a message to ${conversationName}...`}
       />
     </div>
   );

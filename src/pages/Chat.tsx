@@ -5,9 +5,10 @@ import ChatSidebar from '@/components/chat/ChatSidebar';
 import ChatInterface from '@/components/chat/ChatInterface';
 
 const Chat = () => {
-  const [activeConversationId, setActiveConversationId] = useState<string>('1');
+  const [activeConversationId, setActiveConversationId] = useState<string>('');
 
   const handleConversationSelect = (id: string) => {
+    console.log('Selected conversation:', id);
     setActiveConversationId(id);
   };
 
