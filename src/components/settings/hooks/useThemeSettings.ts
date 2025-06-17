@@ -14,6 +14,7 @@ interface ThemeColors {
 interface CompanyLogo {
   url?: string;
   alt?: string;
+  fileName?: string;
 }
 
 export const useThemeSettings = () => {
@@ -72,8 +73,71 @@ export const useThemeSettings = () => {
     }
   });
 
+  // Upload logo mutation
+  const uploadLogoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      return {
+        url: urlData.publicUrl,
+        fileName: fileName,
+        alt: 'Company Logo'
+      };
+    },
+    onSuccess: (logoData) => {
+      updateThemeMutation.mutate({ 
+        key: 'company_logo', 
+        value: logoData 
+      });
+      toast({
+        title: "Logo uploaded",
+        description: "Your company logo has been uploaded successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload logo. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Apply theme colors to document
+  const applyThemeColors = (colors: ThemeColors) => {
+    const root = document.documentElement;
+    if (colors.primary) {
+      root.style.setProperty('--primary', colors.primary);
+    }
+    if (colors.secondary) {
+      root.style.setProperty('--secondary', colors.secondary);
+    }
+    if (colors.accent) {
+      root.style.setProperty('--accent', colors.accent);
+    }
+    if (colors.background) {
+      root.style.setProperty('--background', colors.background);
+    }
+    if (colors.foreground) {
+      root.style.setProperty('--foreground', colors.foreground);
+    }
+  };
+
   return {
     themeQuery,
-    updateThemeMutation
+    updateThemeMutation,
+    uploadLogoMutation,
+    applyThemeColors
   };
 };

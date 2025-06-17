@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Palette, Upload, Eye, RotateCcw } from 'lucide-react';
+import { Palette, Upload, Eye, RotateCcw, ImageIcon, X } from 'lucide-react';
 import { useThemeSettings } from './hooks/useThemeSettings';
 
 interface ThemeColors {
@@ -17,8 +17,9 @@ interface ThemeColors {
 }
 
 const ThemeSettings = () => {
-  const { themeQuery, updateThemeMutation } = useThemeSettings();
+  const { themeQuery, updateThemeMutation, uploadLogoMutation, applyThemeColors } = useThemeSettings();
   const [previewColors, setPreviewColors] = useState<ThemeColors | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: themeSettings, isLoading } = themeQuery;
 
@@ -48,6 +49,7 @@ const ThemeSettings = () => {
   const saveColors = () => {
     if (previewColors) {
       updateThemeMutation.mutate({ key: 'theme_colors', value: previewColors });
+      applyThemeColors(previewColors);
       setPreviewColors(null);
     }
   };
@@ -58,6 +60,40 @@ const ThemeSettings = () => {
 
   const applyPreset = (preset: any) => {
     setPreviewColors(preset.colors);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      uploadLogoMutation.mutate(file);
+    }
+  };
+
+  const removeLogo = () => {
+    updateThemeMutation.mutate({ 
+      key: 'company_logo', 
+      value: { url: '', alt: '', fileName: '' } 
+    });
   };
 
   if (isLoading) {
@@ -125,8 +161,11 @@ const ThemeSettings = () => {
 
         {/* Preview and Actions */}
         <div className="flex gap-3 mt-6">
-          <Button onClick={saveColors} disabled={!previewColors}>
-            Save Colors
+          <Button 
+            onClick={saveColors} 
+            disabled={!previewColors || updateThemeMutation.isPending}
+          >
+            {updateThemeMutation.isPending ? 'Saving...' : 'Save Colors'}
           </Button>
           <Button variant="outline" onClick={resetColors}>
             <RotateCcw className="w-4 h-4 mr-2" />
@@ -140,40 +179,62 @@ const ThemeSettings = () => {
       {/* Logo Management */}
       <div>
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Upload className="w-5 h-5" />
+          <ImageIcon className="w-5 h-5" />
           Company Logo
         </h3>
         
         <div className="space-y-4">
           <div>
             <Label className="text-sm font-medium mb-2 block">Current Logo</Label>
-            <div className="border rounded-lg p-4 bg-gray-50">
+            <div className="border rounded-lg p-4 bg-gray-50 min-h-24 flex items-center justify-center">
               {themeSettings?.company_logo?.url ? (
-                <img 
-                  src={themeSettings.company_logo.url} 
-                  alt={themeSettings.company_logo.alt || "Company Logo"}
-                  className="max-h-16 max-w-48 object-contain"
-                />
+                <div className="relative group">
+                  <img 
+                    src={themeSettings.company_logo.url} 
+                    alt={themeSettings.company_logo.alt || "Company Logo"}
+                    className="max-h-16 max-w-48 object-contain"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={removeLogo}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
               ) : (
-                <div className="text-gray-500 text-sm">No logo uploaded</div>
+                <div className="text-gray-500 text-sm text-center">
+                  <ImageIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  No logo uploaded
+                </div>
               )}
             </div>
           </div>
 
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Logo URL</Label>
-            <Input
-              placeholder="https://example.com/logo.png"
-              defaultValue={themeSettings?.company_logo?.url || ''}
-              onBlur={(e) => {
-                const newLogo = {
-                  ...themeSettings?.company_logo,
-                  url: e.target.value
-                };
-                updateThemeMutation.mutate({ key: 'company_logo', value: newLogo });
-              }}
-            />
-            <p className="text-xs text-gray-600">Enter a direct URL to your logo image</p>
+            <Label className="text-sm font-medium">Upload New Logo</Label>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadLogoMutation.isPending}
+                className="flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                {uploadLogoMutation.isPending ? 'Uploading...' : 'Choose File'}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </div>
+            <p className="text-xs text-gray-600">
+              Supported formats: JPG, PNG, GIF, SVG. Maximum size: 5MB
+            </p>
           </div>
 
           <div className="space-y-3">
