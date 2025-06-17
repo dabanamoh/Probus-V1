@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Sidebar from '@/components/Sidebar';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
 import FeedbackDetails from '@/components/FeedbackDetails';
 import LeaveRequestDetails from '@/components/LeaveRequestDetails';
-import LeaveChart from '@/components/LeaveChart';
+import { toast } from 'sonner';
 
 interface Employee {
   id: string;
@@ -79,6 +79,8 @@ const Feedbacks = () => {
   const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null);
   const [activeTab, setActiveTab] = useState<'feedbacks' | 'leaves'>('feedbacks');
 
+  const queryClient = useQueryClient();
+
   // Fetch feedbacks with proper employee relationship
   const { data: feedbacks, isLoading: feedbacksLoading } = useQuery({
     queryKey: ['feedbacks', searchTerm, statusFilter, typeFilter],
@@ -122,22 +124,53 @@ const Feedbacks = () => {
         .from('leave_requests')
         .select(`
           *,
-          employee:employee_id(id, name, position, profile_image_url, department_id),
+          employee:employees!leave_requests_employee_id_fkey(id, name, position, profile_image_url, department_id),
           department:employees!leave_requests_employee_id_fkey(departments!employees_department_id_fkey(id, name))
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Transform the data to handle the nested department structure and filter valid entries
-      return (data || []).map(request => ({
-        ...request,
-        department: request.department?.departments || { id: '', name: 'No Department' }
-      })).filter(request => 
+      // Transform and filter the data properly
+      const validRequests = (data || []).filter(request => 
         request.employee && 
         typeof request.employee === 'object' && 
         'id' in request.employee
-      ) as LeaveRequest[];
+      ).map(request => ({
+        ...request,
+        department: request.department?.departments || { id: '', name: 'No Department' },
+        employee: request.employee as Employee
+      }));
+
+      return validRequests as LeaveRequest[];
+    },
+  });
+
+  // Update leave request status mutation
+  const updateLeaveRequestMutation = useMutation({
+    mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .update({
+          status,
+          admin_notes: notes || null,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: 'admin' // This should be the actual admin user ID in a real app
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
+      toast.success('Leave request updated successfully');
+    },
+    onError: (error) => {
+      console.error('Error updating leave request:', error);
+      toast.error('Failed to update leave request');
     },
   });
 
@@ -186,6 +219,10 @@ const Feedbacks = () => {
       case 'low': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleStatusUpdate = (data: { id: string; status: string; notes?: string }) => {
+    updateLeaveRequestMutation.mutate(data);
   };
 
   return (
@@ -312,13 +349,6 @@ const Feedbacks = () => {
             </>
           )}
         </div>
-
-        {/* Leave Chart - only show on leaves tab */}
-        {activeTab === 'leaves' && leaveRequests && (
-          <div className="mb-6">
-            <LeaveChart leaveRequests={leaveRequests} />
-          </div>
-        )}
 
         {/* Search and Filters */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
@@ -539,7 +569,11 @@ const Feedbacks = () => {
                           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                             <DialogTitle>Leave Request Details</DialogTitle>
                             {selectedLeaveRequest && (
-                              <LeaveRequestDetails leaveRequest={selectedLeaveRequest} />
+                              <LeaveRequestDetails 
+                                leaveRequest={selectedLeaveRequest}
+                                onStatusUpdate={handleStatusUpdate}
+                                isUpdating={updateLeaveRequestMutation.isPending}
+                              />
                             )}
                           </DialogContent>
                         </Dialog>
