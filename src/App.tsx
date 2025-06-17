@@ -12,6 +12,7 @@ import Rewards from "./pages/Rewards";
 import KPI from "./pages/KPI";
 import Feedbacks from "./pages/Feedbacks";
 import Notices from "./pages/Notices";
+import Events from "./pages/Events";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/kpi" element={<KPI />} />
             <Route path="/feedbacks" element={<Feedbacks />} />
             <Route path="/notices" element={<Notices />} />
+            <Route path="/events" element={<Events />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

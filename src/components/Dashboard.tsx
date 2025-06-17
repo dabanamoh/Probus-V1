@@ -85,10 +85,10 @@ const Dashboard = () => {
     },
     {
       title: "Birthdays / Work Anniversaries",
-      subtitle: "Employees Attendance List",
+      subtitle: "Upcoming employee birthdays and work anniversaries",
       color: "bg-gradient-to-br from-cyan-100 to-cyan-200",
       icon: Gift,
-      path: "/employees",
+      path: "/events",
       avatars: [
         { name: "User 1", image: "" },
         { name: "User 2", image: "" },
@@ -102,7 +102,7 @@ const Dashboard = () => {
       subtitle: "Holidays in the calendar year",
       color: "bg-gradient-to-br from-purple-100 to-purple-200",
       icon: Calendar,
-      path: "/kpi",
+      path: "/events",
       avatars: []
     }
   ];

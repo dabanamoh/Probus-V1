@@ -10,7 +10,8 @@ import {
   BarChart3, 
   MessageSquare,
   User,
-  Settings
+  Settings,
+  Calendar
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -29,6 +30,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     { icon: Award, label: "Rewards / Punishment", path: "/rewards", active: location.pathname === "/rewards" },
     { icon: BarChart3, label: "KPI", path: "/kpi", active: location.pathname === "/kpi" },
     { icon: MessageSquare, label: "Feedbacks", path: "/feedbacks", active: location.pathname === "/feedbacks" },
+    { icon: Calendar, label: "Events", path: "/events", active: location.pathname === "/events" },
   ];
 
   return (
