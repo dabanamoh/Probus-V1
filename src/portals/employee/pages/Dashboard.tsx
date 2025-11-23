@@ -20,7 +20,8 @@ import {
   ClockIcon,
   MessageSquare,
   ClipboardCheck,
-  BarChart3
+  BarChart3,
+  Shield
 } from 'lucide-react';
 import Sidebar from '../layouts/EmployeeSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
@@ -198,11 +199,11 @@ const EmployeeDashboard = () => {
           ))}
         </div>
       ) : stats ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
           {/* Pending Tasks - Pastel Blue */}
           <Card
             className="border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-            onClick={() => setActiveTab('tasks')}
+            onClick={() => setActiveTab('approvals')}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-sky-50"></div>
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100/30 rounded-full blur-2xl"></div>
@@ -218,60 +219,22 @@ const EmployeeDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Pending Emails - Pastel Sky */}
+          {/* Completed Tasks - Pastel Sky */}
           <Card
             className="border border-sky-200 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-            onClick={() => setActiveTab('mail')}
+            onClick={() => setActiveTab('approvals')}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-sky-50 to-cyan-50"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-sky-100/30 rounded-full blur-2xl"></div>
             <CardContent className="p-6 relative">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold text-sky-700 uppercase tracking-wider">Inbox</p>
+                <p className="text-xs font-semibold text-sky-700 uppercase tracking-wider">Completed</p>
                 <div className="p-2 bg-sky-100 rounded-xl group-hover:bg-sky-200 transition-colors border border-sky-200">
-                  <Mail className="w-5 h-5 text-sky-600" />
+                  <CheckCircle className="w-5 h-5 text-sky-600" />
                 </div>
               </div>
-              <h3 className="text-4xl font-bold text-sky-900 drop-shadow-sm">{stats.pendingEmails}</h3>
-              <p className="text-sm text-sky-700 mt-2 font-medium">Unread messages</p>
-            </CardContent>
-          </Card>
-
-          {/* Leave Balance - Pastel Indigo */}
-          <Card
-            className="border border-indigo-200 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-            onClick={() => setActiveTab('time')}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50"></div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100/30 rounded-full blur-2xl"></div>
-            <CardContent className="p-6 relative">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wider">Leave</p>
-                <div className="p-2 bg-indigo-100 rounded-xl group-hover:bg-indigo-200 transition-colors border border-indigo-200">
-                  <CalendarDays className="w-5 h-5 text-indigo-600" />
-                </div>
-              </div>
-              <h3 className="text-4xl font-bold text-indigo-900 drop-shadow-sm">{stats.leaveDays}</h3>
-              <p className="text-sm text-indigo-700 mt-2 font-medium">Days available</p>
-            </CardContent>
-          </Card>
-
-          {/* Completed Tasks - Pastel Cyan */}
-          <Card
-            className="border border-cyan-200 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-            onClick={() => setActiveTab('tasks')}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 to-blue-50"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-cyan-100/30 rounded-full blur-2xl"></div>
-            <CardContent className="p-6 relative">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold text-cyan-700 uppercase tracking-wider">Completed</p>
-                <div className="p-2 bg-cyan-100 rounded-xl group-hover:bg-cyan-200 transition-colors border border-cyan-200">
-                  <CheckCircle className="w-5 h-5 text-cyan-600" />
-                </div>
-              </div>
-              <h3 className="text-4xl font-bold text-cyan-900 drop-shadow-sm">{stats.completedTasks}</h3>
-              <p className="text-sm text-cyan-700 mt-2 font-medium">This month</p>
+              <h3 className="text-4xl font-bold text-sky-900 drop-shadow-sm">{stats.completedTasks}</h3>
+              <p className="text-sm text-sky-700 mt-2 font-medium">This month</p>
             </CardContent>
           </Card>
         </div>
@@ -285,116 +248,40 @@ const EmployeeDashboard = () => {
             <h2 className="text-lg font-semibold text-gray-900">Quick Access</h2>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            {/* Email - Pastel Blue */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+            {/* My Work */}
             <Card
               className="border border-blue-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-              onClick={() => setActiveTab('mail')}
+              onClick={() => setActiveTab('approvals')}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-sky-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <CardContent className="p-6 relative">
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="p-4 bg-gradient-to-br from-blue-100 to-sky-100 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 border border-blue-200">
-                    <Mail className="w-7 h-7 text-blue-600" />
+                    <ClipboardCheck className="w-7 h-7 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 group-hover:text-blue-900 transition-colors">Email</h3>
-                    <p className="text-xs text-gray-600 group-hover:text-blue-700 mt-1 transition-colors font-medium">{stats?.pendingEmails || 0} unread</p>
+                    <h3 className="font-bold text-gray-900 group-hover:text-blue-900 transition-colors">My Work</h3>
+                    <p className="text-xs text-gray-600 group-hover:text-blue-700 mt-1 transition-colors font-medium">{stats?.pendingTasks || 0} pending</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Tasks - Pastel Sky */}
-            <Card
-              className="border border-sky-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-              onClick={() => setActiveTab('tasks')}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-sky-50 to-cyan-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-6 relative">
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="p-4 bg-gradient-to-br from-sky-100 to-cyan-100 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 border border-sky-200">
-                    <ClipboardCheck className="w-7 h-7 text-sky-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 group-hover:text-sky-900 transition-colors">Tasks</h3>
-                    <p className="text-xs text-gray-600 group-hover:text-sky-700 mt-1 transition-colors font-medium">{stats?.pendingTasks || 0} pending</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Time Tracking - Pastel Indigo */}
+            {/* Whistleblower */}
             <Card
               className="border border-indigo-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-              onClick={() => setActiveTab('time')}
+              onClick={() => setActiveTab('whistleblower')}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <CardContent className="p-6 relative">
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="p-4 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 border border-indigo-200">
-                    <Clock className="w-7 h-7 text-indigo-600" />
+                    <Shield className="w-7 h-7 text-indigo-600" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 group-hover:text-indigo-900 transition-colors">Time</h3>
-                    <p className="text-xs text-gray-600 group-hover:text-indigo-700 mt-1 transition-colors font-medium">{kpiData.isClockedIn ? 'Active' : 'Inactive'}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Announcements - Pastel Cyan */}
-            <Card
-              className="border border-cyan-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-              onClick={() => setActiveTab('announcements')}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-6 relative">
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="p-4 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 border border-cyan-200">
-                    <Bell className="w-7 h-7 text-cyan-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 group-hover:text-cyan-900 transition-colors">Notices</h3>
-                    <p className="text-xs text-gray-600 group-hover:text-cyan-700 mt-1 transition-colors font-medium">{stats?.announcements || 0} new</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Events - Pastel Blue */}
-            <Card
-              className="border border-blue-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-              onClick={() => setActiveTab('events')}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-indigo-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-6 relative">
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="p-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 border border-blue-200">
-                    <Calendar className="w-7 h-7 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 group-hover:text-blue-900 transition-colors">Events</h3>
-                    <p className="text-xs text-gray-600 group-hover:text-blue-700 mt-1 transition-colors font-medium">View calendar</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Directory - Pastel Sky */}
-            <Card
-              className="border border-sky-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
-              onClick={() => setActiveTab('directory')}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-sky-100 to-cyan-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-6 relative">
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="p-4 bg-gradient-to-br from-sky-100 to-cyan-100 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 border border-sky-200">
-                    <Users className="w-7 h-7 text-sky-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 group-hover:text-sky-900 transition-colors">Directory</h3>
-                    <p className="text-xs text-gray-600 group-hover:text-sky-700 mt-1 transition-colors font-medium">Find people</p>
+                    <h3 className="font-bold text-gray-900 group-hover:text-indigo-900 transition-colors">Safety</h3>
+                    <p className="text-xs text-gray-600 group-hover:text-indigo-700 mt-1 transition-colors font-medium">Report concerns</p>
                   </div>
                 </div>
               </CardContent>

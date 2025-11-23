@@ -268,52 +268,19 @@ const HRDashboard = () => {
               </CardContent>
             </Card>
             
-            {/* Active Recruitment */}
+            {/* Whistleblower Reports */}
             <Card 
               className="border border-indigo-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50"
-              onClick={() => setActiveTab('recruitment')}
+              onClick={() => setActiveTab('whistleblower')}
             >
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-indigo-700">Active Recruitment</p>
-                    <h3 className="text-2xl font-semibold text-indigo-900 mt-2">{stats.activeRecruitment}</h3>
+                    <p className="text-sm font-medium text-indigo-700">Safety Reports</p>
+                    <h3 className="text-2xl font-semibold text-indigo-900 mt-2">{stats.complianceIssues}</h3>
                   </div>
                   <div className="p-2.5 bg-indigo-100 rounded-xl border border-indigo-200">
-                    <UserPlus className="w-5 h-5 text-indigo-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* New Hires */}
-            <Card className="border border-cyan-200 shadow-sm hover:shadow-md transition-shadow rounded-xl bg-gradient-to-br from-cyan-50 to-blue-50">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-cyan-700">New Hires (30d)</p>
-                    <h3 className="text-2xl font-semibold text-cyan-900 mt-2">{stats.newHires}</h3>
-                  </div>
-                  <div className="p-2.5 bg-cyan-100 rounded-xl border border-cyan-200">
-                    <Award className="w-5 h-5 text-cyan-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Compliance Issues */}
-            <Card 
-              className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100"
-              onClick={() => setActiveTab('policies')}
-            >
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-blue-700">Compliance Issues</p>
-                    <h3 className="text-2xl font-semibold text-blue-900 mt-2">{stats.complianceIssues}</h3>
-                  </div>
-                  <div className="p-2.5 bg-blue-200 rounded-xl border border-blue-300">
-                    <AlertTriangle className="w-5 h-5 text-blue-700" />
+                    <Shield className="w-5 h-5 text-indigo-600" />
                   </div>
                 </div>
               </CardContent>
@@ -325,7 +292,7 @@ const HRDashboard = () => {
       {/* Quick Access */}
       <div className="mb-6 sm:mb-8">
         <h2 className="text-lg sm:text-xl font-semibold text-blue-900 mb-4 sm:mb-6">Quick Access</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <Card 
             className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group bg-gradient-to-br from-blue-50 to-sky-50"
             onClick={() => setActiveTab('approvals')}
@@ -376,33 +343,6 @@ const HRDashboard = () => {
                 className="bg-sky-600 text-white hover:bg-sky-700 px-4 rounded-xl text-sm font-medium shadow-sm transition-colors w-full h-10"
               >
                 Manage
-              </button>
-            </CardContent>
-          </Card>
-          
-          <Card 
-            className="border border-indigo-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group bg-gradient-to-br from-indigo-50 to-purple-50"
-            onClick={() => setActiveTab('recruitment')}
-          >
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base font-semibold text-indigo-900 flex items-center gap-3">
-                <div className="p-2.5 bg-indigo-100 rounded-xl group-hover:bg-indigo-200 transition-colors border border-indigo-200">
-                  <UserPlus className="w-5 h-5 text-indigo-600" />
-                </div>
-                Recruitment
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-indigo-700 mb-4 leading-relaxed">Active hiring and onboarding</p>
-              <div className="flex items-center justify-between text-xs text-indigo-600 mb-3">
-                <span>Active Positions</span>
-                <span className="font-semibold text-indigo-700">{stats?.activeRecruitment || 0}</span>
-              </div>
-              <button
-                onClick={(e) => { e.stopPropagation(); setActiveTab('recruitment'); }}
-                className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 rounded-xl text-sm font-medium shadow-sm transition-colors w-full h-10"
-              >
-                View Positions
               </button>
             </CardContent>
           </Card>
