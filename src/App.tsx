@@ -17,24 +17,15 @@ import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./portals/shared/components/layout/ProtectedRoute";
 import RootRedirect from "./portals/shared/components/layout/RootRedirect";
 
-// Lazy load pages for better performance
+// Lazy load pages for better performance - MVP ONLY
 const Departments = lazy(() => import("./portals/admin/pages/Departments"));
 const Employees = lazy(() => import("./portals/admin/pages/Employees"));
-const EmployeeDetails = lazy(() => import("./portals/admin/pages/EmployeeDetails"));
-const Resignations = lazy(() => import("./portals/admin/pages/Resignations"));
-const Rewards = lazy(() => import("./portals/admin/pages/Rewards"));
-const Feedbacks = lazy(() => import("./portals/admin/pages/Feedbacks"));
 const Notices = lazy(() => import("./portals/admin/pages/Notices"));
-const Events = lazy(() => import("./portals/admin/pages/Events"));
 const Settings = lazy(() => import("./portals/admin/pages/Settings"));
-const KPIs = lazy(() => import("./portals/admin/pages/KPIs"));
 const MyWork = lazy(() => import("./portals/employee/pages/MyWork"));
 const SafetyDashboard = lazy(() => import("./portals/admin/pages/SafetyDashboard"));
-const QuickSetupWizard = lazy(() => import("./portals/admin/pages/QuickSetupWizard"));
 const ManagerDashboard = lazy(() => import("./portals/manager/pages/Dashboard"));
 const HRDashboard = lazy(() => import("./portals/hr/pages/Dashboard"));
-const TimeConfiguration = lazy(() => import("./portals/admin/pages/TimeConfiguration"));
-const AdminEmail = lazy(() => import("./portals/admin/pages/Email"));
 
 // Configure React Query with better defaults for performance
 const queryClient = new QueryClient({
@@ -71,13 +62,7 @@ const App = () => {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Registration />} />
                   <Route path="/onboarding" element={<Onboarding />} />
-                  <Route path="/setup" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <QuickSetupWizard />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
+
 
                   {/* My Work - Universal Inbox for all roles */}
                   <Route path="/work" element={
@@ -118,34 +103,10 @@ const App = () => {
                       </Suspense>
                     </ProtectedRoute>
                   } />
-                  <Route path="/employees/:id" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <EmployeeDetails />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/resignations" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <Resignations />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/rewards" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <Rewards />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/feedbacks" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <Feedbacks />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
+
+
+
+
                   <Route path="/notices" element={
                     <ProtectedRoute allowedRoles={['admin']}>
                       <Suspense fallback={<LoadingSpinner />}>
@@ -153,13 +114,7 @@ const App = () => {
                       </Suspense>
                     </ProtectedRoute>
                   } />
-                  <Route path="/events" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <Events />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
+
                   <Route path="/settings" element={
                     <ProtectedRoute allowedRoles={['admin', 'employee', 'manager', 'hr']}>
                       <Suspense fallback={<LoadingSpinner />}>
@@ -167,27 +122,9 @@ const App = () => {
                       </Suspense>
                     </ProtectedRoute>
                   } />
-                  <Route path="/kpis" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <KPIs />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/time-config" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <TimeConfiguration />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/email" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <AdminEmail />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
+
+
+
 
                   {/* Manager Routes */}
                   <Route path="/manager/*" element={
