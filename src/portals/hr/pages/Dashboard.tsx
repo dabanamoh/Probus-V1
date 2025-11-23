@@ -455,16 +455,6 @@ const HRDashboard = () => {
           {activeTab === 'dashboard' && renderDashboardContent()}
           {activeTab === 'employees' && <EmployeeManagement />}
           {activeTab === 'approvals' && <HRApprovals />}
-          {activeTab === 'events' && <Events standalone={false} />}
-          {activeTab === 'policies' && <PolicyManagement />}
-          {activeTab === 'recruitment' && <RecruitmentPanel />}
-          {activeTab === 'reports' && <HRReports />}
-          {activeTab === 'email' && <EmailClient />}
-          {activeTab === 'tasks' && <TaskManager />}
-          {activeTab === 'time' && <TimeTracking />}
-          {activeTab === 'directory' && <Directory />}
-          {activeTab === 'rules' && <RulesAndEthics />}
-          {activeTab === 'apps' && <Apps />}
           {activeTab === 'whistleblower' && <Whistleblower />}
           {activeTab === 'settings' && <SettingsComponent />}
         </div>

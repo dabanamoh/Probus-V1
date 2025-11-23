@@ -322,19 +322,10 @@ const ManagerDashboard = () => {
       <div className="flex-1 flex flex-col h-screen overflow-hidden md:ml-64 max-w-full overflow-x-hidden">
         <div className="flex-1 p-3 sm:p-4 md:p-6 overflow-auto max-w-full overflow-x-hidden">
           {activeTab === 'dashboard' && renderDashboardContent()}
-          {activeTab === 'mail' && <EmailClient />}
-          {activeTab === 'tasks' && <TaskManager />}
-          {activeTab === 'events' && <Events standalone={false} />}
-          {activeTab === 'time' && <TimeTracking />}
-          {activeTab === 'directory' && <Directory />}
-          {activeTab === 'rules' && <RulesAndEthics />}
-          {activeTab === 'whistleblower' && <Whistleblower />}
-          {activeTab === 'settings' && <SettingsComponent />}
-          {activeTab === 'apps' && <Apps />}
           {activeTab === 'approvals' && <ManagerApprovals />}
           {activeTab === 'team' && <TeamManagement />}
-          {activeTab === 'kpis' && <KPIManagement />}
-          {activeTab === 'reports' && <ManagerReports />}
+          {activeTab === 'whistleblower' && <Whistleblower />}
+          {activeTab === 'settings' && <SettingsComponent />}
         </div>
       </div>
     </div>
