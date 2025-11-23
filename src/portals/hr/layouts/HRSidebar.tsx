@@ -1,19 +1,10 @@
 import React from 'react';
 import { 
   LayoutDashboard, 
-  Mail, 
   Settings, 
-  Clock,
-  Grid,
   Users,
-  FileText,
   Shield,
-  UserPlus,
-  ClipboardCheck,
-  BarChart3,
-  BookOpen,
-  Inbox,
-  Calendar
+  ClipboardCheck
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../../shared/ui/avatar";
@@ -30,15 +21,7 @@ const HRSidebar = ({ activeTab, setActiveTab, className }: HRSidebarProps) => {
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", active: activeTab === "dashboard" },
     { icon: ClipboardCheck, label: "My Work", id: "approvals", active: activeTab === "approvals" },
     { icon: Users, label: "Employees", id: "employees", active: activeTab === "employees" },
-    { icon: Calendar, label: "Events & Calendar", id: "events", active: activeTab === "events" },
-    { icon: UserPlus, label: "Recruitment", id: "recruitment", active: activeTab === "recruitment" },
-    { icon: FileText, label: "Policies", id: "policies", active: activeTab === "policies" },
-    { icon: Shield, label: "Whistleblower", id: "whistleblower", active: activeTab === "whistleblower" },
-    { icon: BarChart3, label: "HR Reports", id: "reports", active: activeTab === "reports" },
-    { icon: BookOpen, label: "Directory", id: "directory", active: activeTab === "directory" },
-    { icon: Mail, label: "Email", id: "email", active: activeTab === "email" },
-    { icon: Clock, label: "Time Tracking", id: "time", active: activeTab === "time" },
-    { icon: Grid, label: "Apps", id: "apps", active: activeTab === "apps" },
+    { icon: Shield, label: "Whistleblower", id: "whistleblower", active: activeTab === "whistleblower" }
   ];
 
   return (

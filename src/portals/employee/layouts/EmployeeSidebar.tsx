@@ -3,22 +3,9 @@ import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from 'react-router-dom';
 import appSessionService from '@/services/appSessionService';
 import { 
-  Home,
-  Mail, 
-  Calendar, 
-  Clock, 
-  User, 
-  FileText, 
-  Users, 
-  BookOpen,
   Settings as SettingsIcon,
   Shield,
-  Grid,
-  MessageSquare,
-  Minus,
-  ClipboardCheck,
-  BarChart3,
-  Inbox
+  ClipboardCheck
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "../../shared/ui/avatar";
 import ThemeToggle from '../../shared/components/misc/ThemeToggle';
@@ -78,15 +65,7 @@ const Sidebar = ({ className, activeTab, setActiveTab }: SidebarProps) => {
 
   const menuItems = [
     { icon: ClipboardCheck, label: "My Work", id: "approvals", active: activeTab === "approvals" },
-    { icon: Mail, label: "Email", id: "mail", active: activeTab === "mail" },
-    { icon: FileText, label: "Tasks", id: "tasks", active: activeTab === "tasks" },
-    { icon: Calendar, label: "Events & Calendar", id: "events", active: activeTab === "events" },
-    { icon: Clock, label: "Time Tracking", id: "time", active: activeTab === "time" },
-    { icon: Users, label: "Directory", id: "directory", active: activeTab === "directory" },
-    { icon: BarChart3, label: "My Reports", id: "reports", active: activeTab === "reports" },
-    { icon: BookOpen, label: "Rules & Ethics", id: "rules", active: activeTab === "rules" },
-    { icon: Grid, label: "Apps", id: "apps", active: activeTab === "apps" },
-    { icon: Shield, label: "Whistleblower", id: "whistleblower", active: activeTab === "whistleblower" },
+    { icon: Shield, label: "Whistleblower", id: "whistleblower", active: activeTab === "whistleblower" }
   ];
 
   return (
@@ -135,40 +114,6 @@ const Sidebar = ({ className, activeTab, setActiveTab }: SidebarProps) => {
             </li>
           ))}
         </ul>
-        
-        {/* Quick Access Apps */}
-        {loggedInApps.length > 0 && (
-          <div className="mt-6 px-3">
-            <div className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2 px-2">
-              Quick Access
-            </div>
-            <ul className="space-y-1">
-              {loggedInApps.map((app) => {
-                const AppIcon = getAppIcon(app.icon);
-                return (
-                  <li key={app.id}>
-                    <div className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium group">
-                      <div className="flex items-center gap-3">
-                        <AppIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
-                        <span>{app.name}</span>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAppLogout(app.id);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 dark:hover:bg-slate-700 rounded transition-all"
-                        title="Disconnect app"
-                      >
-                        <Minus className="w-3 h-3 text-gray-600 dark:text-slate-400" />
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
       </nav>
 
       {/* User Profile */}

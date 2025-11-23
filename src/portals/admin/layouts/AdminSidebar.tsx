@@ -4,19 +4,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Building2,
   Users,
-  UserX,
-  Award,
   Settings,
-  Calendar,
-  TrendingUp,
-  FileText,
   Bell,
-  MessageCircle,
-  Mail,
   LogOut,
   Inbox,
   Shield,
-  Clock
+  Brain
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "../../shared/ui/avatar";
 import { useAuth } from '@/context/AuthContext';
@@ -38,17 +31,10 @@ const Sidebar = ({ className }: SidebarProps) => {
 
   const menuItems = [
     { icon: Inbox, label: "My Work", path: "/work" },
-    { icon: Mail, label: "Email", path: "/email" },
     { icon: Shield, label: "Safety & AI", path: "/safety" },
-    { icon: Users, label: "People", path: "/employees" },
+    { icon: Users, label: "Employees", path: "/employees" },
     { icon: Building2, label: "Departments", path: "/departments" },
-    { icon: Bell, label: "Communications", path: "/notices" },
-    { icon: Calendar, label: "Events & Calendar", path: "/events" },
-    { icon: UserX, label: "Offboarding", path: "/resignations" },
-    { icon: Award, label: "Recognition", path: "/rewards" },
-    { icon: MessageCircle, label: "Feedback", path: "/feedbacks" },
-    { icon: Clock, label: "Time Tracking", path: "/time-config" },
-    { icon: TrendingUp, label: "Insights", path: "/kpis" }
+    { icon: Bell, label: "Notices", path: "/notices" }
   ];
 
   return (
