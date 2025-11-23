@@ -5,15 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
 import { Button } from "../../shared/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Settings as SettingsIcon, Users, Palette, Building, Shield, Bell, LogOut, Plug, Scale, Mail } from 'lucide-react';
+import { Settings as SettingsIcon, Users, Building, Shield, Bell, LogOut } from 'lucide-react';
 import PermissionsSettings from '../components/settings/PermissionsSettings';
-import ThemeSettings from '../components/settings/ThemeSettings';
 import CompanySettings from '../components/settings/CompanySettings';
 import SecuritySettings from '../components/settings/SecuritySettings';
 import NotificationSettings from '../components/settings/NotificationSettings';
-import IntegrationsSettings from '../components/settings/IntegrationsSettings';
-import RulesEthicsSettings from '../components/settings/RulesEthicsSettings';
-import EmailSetup from '../../shared/forms/EmailSetup';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
@@ -51,14 +47,10 @@ const Settings = () => {
           </div>
 
           <Tabs defaultValue="permissions" className="w-full max-w-full overflow-x-hidden">
-            <TabsList className="!h-auto grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9 gap-2 p-2 bg-white border border-blue-200 rounded-xl shadow-sm max-w-full">
+            <TabsList className="!h-auto grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 p-2 bg-white border border-blue-200 rounded-xl shadow-sm max-w-full">
               <TabsTrigger value="permissions" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-blue-50">
                 <Users className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate hidden sm:inline">Permissions</span>
-              </TabsTrigger>
-              <TabsTrigger value="theme" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-blue-50">
-                <Palette className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate hidden sm:inline">Theme</span>
               </TabsTrigger>
               <TabsTrigger value="company" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-blue-50">
                 <Building className="w-4 h-4 flex-shrink-0" />
@@ -71,18 +63,6 @@ const Settings = () => {
               <TabsTrigger value="notifications" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-blue-50">
                 <Bell className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate hidden sm:inline">Notifications</span>
-              </TabsTrigger>
-              <TabsTrigger value="email" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-blue-50">
-                <Mail className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate hidden sm:inline">Email</span>
-              </TabsTrigger>
-              <TabsTrigger value="integrations" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-blue-50">
-                <Plug className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate hidden sm:inline">Integrations</span>
-              </TabsTrigger>
-              <TabsTrigger value="rules-ethics" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-blue-50">
-                <Scale className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate hidden sm:inline">Rules & Ethics</span>
               </TabsTrigger>
               <TabsTrigger value="signout" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-red-50 data-[state=active]:text-red-700 hover:bg-blue-50">
                 <LogOut className="w-4 h-4 flex-shrink-0" />
@@ -102,22 +82,6 @@ const Settings = () => {
                 </CardHeader>
                 <CardContent className="p-5">
                   <PermissionsSettings />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="theme" className="mt-6">
-              <Card className="border border-blue-200 shadow-sm rounded-xl">
-                <CardHeader className="border-b border-blue-200 bg-white rounded-t-xl p-5">
-                  <CardTitle className="text-lg font-semibold text-blue-900 flex items-center gap-3">
-                    <div className="p-2 bg-indigo-50 rounded-lg">
-                      <Palette className="w-5 h-5 text-indigo-600" />
-                    </div>
-                    Theme Customization
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-5">
-                  <ThemeSettings />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -166,54 +130,6 @@ const Settings = () => {
                 </CardHeader>
                 <CardContent className="p-5">
                   <NotificationSettings />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="email" className="mt-6">
-              <Card className="border border-blue-200 shadow-sm rounded-xl">
-                <CardHeader className="border-b border-blue-200 bg-white rounded-t-xl p-5">
-                  <CardTitle className="text-lg font-semibold text-blue-900 flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <Mail className="w-5 h-5 text-blue-600" />
-                    </div>
-                    Email Setup
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <EmailSetup />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="integrations" className="mt-6">
-              <Card className="border border-blue-200 shadow-sm rounded-xl">
-                <CardHeader className="border-b border-blue-200 bg-white rounded-t-xl p-5">
-                  <CardTitle className="text-lg font-semibold text-blue-900 flex items-center gap-3">
-                    <div className="p-2 bg-indigo-50 rounded-lg">
-                      <Plug className="w-5 h-5 text-indigo-600" />
-                    </div>
-                    App Integrations
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-5">
-                  <IntegrationsSettings />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="rules-ethics" className="mt-6">
-              <Card className="border border-blue-200 shadow-sm rounded-xl">
-                <CardHeader className="border-b border-blue-200 bg-white rounded-t-xl p-5">
-                  <CardTitle className="text-lg font-semibold text-blue-900 flex items-center gap-3">
-                    <div className="p-2 bg-teal-50 rounded-lg">
-                      <Scale className="w-5 h-5 text-teal-600" />
-                    </div>
-                    Rules & Ethics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-5">
-                  <RulesEthicsSettings />
                 </CardContent>
               </Card>
             </TabsContent>
