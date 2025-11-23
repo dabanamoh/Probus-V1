@@ -161,8 +161,8 @@ const ManagerDashboard = () => {
           )}
           
           {statsLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {[...Array(10)].map((_, i) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
                 <Card key={i} className="shadow-lg border-0">
                   <CardContent className="p-3 sm:p-4">
                     <Skeleton className="h-4 w-24 mb-2" />
@@ -172,107 +172,35 @@ const ManagerDashboard = () => {
               ))}
             </div>
           ) : stats ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {/* Team Pending Emails */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {/* Team Members */}
               <Card 
                 className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
-                onClick={() => setActiveTab('mail')}
+                onClick={() => setActiveTab('team')}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1">Team Emails</div>
-                      <div className="text-2xl font-semibold text-blue-900">{stats.pendingEmails * 5}</div>
+                      <div className="text-xs font-medium text-blue-600 mb-1">Team Members</div>
+                      <div className="text-2xl font-semibold text-blue-900">{stats.completedTasks || 12}</div>
                     </div>
                     <div className="p-2 bg-blue-50 rounded-lg">
-                      <Mail className="w-5 h-5 text-blue-600" />
+                      <Users className="w-5 h-5 text-blue-600" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
               
-              {/* Team Announcements */}
+              {/* Pending Approvals */}
               <Card 
-                className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
-                onClick={() => setActiveTab('announcements')}
+                className="border border-sky-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
+                onClick={() => setActiveTab('approvals')}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1">Team Announcements</div>
-                      <div className="text-2xl font-semibold text-blue-900">{stats.announcements * 3}</div>
-                    </div>
-                    <div className="p-2 bg-indigo-50 rounded-lg">
-                      <Bell className="w-5 h-5 text-indigo-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Team Leave Days */}
-              <Card 
-                className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
-                onClick={() => setActiveTab('settings')}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1">Team Leave Days</div>
-                      <div className="text-2xl font-semibold text-blue-900">{stats.leaveDays * 4}</div>
-                    </div>
-                    <div className="p-2 bg-sky-50 rounded-lg">
-                      <Calendar className="w-5 h-5 text-sky-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Team Late Resumption Days */}
-              <Card 
-                className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
-                onClick={() => setActiveTab('time')}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1">Team Late Days</div>
-                      <div className="text-2xl font-semibold text-blue-900">{stats.lateResumptionDays * 2}</div>
-                    </div>
-                    <div className="p-2 bg-cyan-50 rounded-lg">
-                      <ClockIcon className="w-5 h-5 text-cyan-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Team Pending Tasks */}
-              <Card 
-                className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
-                onClick={() => setActiveTab('tasks')}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1">Team Pending Tasks</div>
-                      <div className="text-2xl font-semibold text-blue-900">{stats.pendingTasks * 3}</div>
-                    </div>
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <CalendarDays className="w-5 h-5 text-blue-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Team Completed Tasks */}
-              <Card 
-                className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
-                onClick={() => setActiveTab('tasks')}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1">Team Completed Tasks</div>
-                      <div className="text-2xl font-semibold text-blue-900">{stats.completedTasks * 4}</div>
+                      <div className="text-xs font-medium text-sky-600 mb-1">Pending Approvals</div>
+                      <div className="text-2xl font-semibold text-sky-900">{stats.pendingTasks || 8}</div>
                     </div>
                     <div className="p-2 bg-sky-50 rounded-lg">
                       <CheckCircle className="w-5 h-5 text-sky-600" />
@@ -281,263 +209,69 @@ const ManagerDashboard = () => {
                 </CardContent>
               </Card>
               
-              {/* Team Upcoming Meetings */}
+              {/* Safety Reports */}
               <Card 
-                className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
-                onClick={() => setActiveTab('tasks')}
+                className="border border-indigo-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
+                onClick={() => setActiveTab('whistleblower')}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1">Team Meetings</div>
-                      <div className="text-2xl font-semibold text-blue-900">{stats.upcomingMeetings * 2}</div>
+                      <div className="text-xs font-medium text-indigo-600 mb-1">Safety Reports</div>
+                      <div className="text-2xl font-semibold text-indigo-900">{stats.announcements || 2}</div>
                     </div>
-                    <div className="p-2 bg-cyan-50 rounded-lg">
-                      <Video className="w-5 h-5 text-cyan-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Team Missed Calls */}
-              <Card 
-                className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl"
-                onClick={() => setActiveTab('chat')}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1">Team Missed Calls</div>
-                      <div className="text-2xl font-semibold text-blue-900">{stats.missedCalls * 2}</div>
-                    </div>
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <Phone className="w-5 h-5 text-blue-600" />
+                    <div className="p-2 bg-indigo-50 rounded-lg">
+                      <Shield className="w-5 h-5 text-indigo-600" />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-              
-              {/* Time Tracking */}
-              <Card className="border border-blue-200 shadow-sm rounded-xl">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1">Time Tracking</div>
-                      <div className="text-base font-semibold text-blue-900">
-                        {kpiData.isClockedIn ? 'Clocked In' : 'Clocked Out'}
-                      </div>
-                      {kpiData.lastClockIn && (
-                        <div className="text-xs text-blue-500 mt-1">
-                          Since {kpiData.lastClockIn}
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-2 bg-sky-50 rounded-lg">
-                      <Clock className="w-5 h-5 text-sky-600" />
-                    </div>
-                  </div>
-                  <button 
-                    onClick={handleClockInOut}
-                    className={`w-full py-2 rounded-lg text-xs font-medium shadow-sm transition-colors ${
-                      kpiData.isClockedIn 
-                        ? 'bg-red-600 hover:bg-red-700 text-white' 
-                        : 'bg-teal-600 hover:bg-teal-700 text-white'
-                    }`}
-                  >
-                    {kpiData.isClockedIn ? 'Clock Out' : 'Clock In'}
-                  </button>
                 </CardContent>
               </Card>
             </div>
           ) : null}
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - MVP */}
         <h2 className="text-lg font-semibold text-blue-900 mb-4 mt-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Email */}
-          <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-blue-900 flex items-center gap-2">
-                <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-                  <Mail className="w-4 h-4 text-blue-600" />
-                </div>
-                Email
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-xs text-blue-600 mb-4">Access your corporate email client</p>
-              <button 
-                onClick={() => setActiveTab('mail')}
-                className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
-              >
-                Open Email
-              </button>
-            </CardContent>
-          </Card>
-          
-          {/* Tasks */}
-          <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-blue-900 flex items-center gap-2">
-                <div className="p-2 bg-sky-50 rounded-lg group-hover:bg-sky-100 transition-colors">
-                  <Calendar className="w-4 h-4 text-sky-600" />
-                </div>
-                Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-xs text-blue-600 mb-4">Manage your personal and team tasks</p>
-              <button 
-                onClick={() => setActiveTab('tasks')}
-                className="bg-sky-600 text-white hover:bg-sky-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
-              >
-                View Tasks
-              </button>
-            </CardContent>
-          </Card>
-          
-          {/* Team Directory */}
-          <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-blue-900 flex items-center gap-2">
-                <div className="p-2 bg-amber-50 rounded-lg group-hover:bg-amber-100 transition-colors">
-                  <Users className="w-4 h-4 text-amber-600" />
-                </div>
-                Team Directory
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-xs text-gray-600 mb-4">View and manage your team members</p>
-              <button 
-                onClick={() => setActiveTab('directory')}
-                className="bg-amber-600 text-white hover:bg-amber-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
-              >
-                View Team
-              </button>
-            </CardContent>
-          </Card>
-          
-          {/* Team Approvals */}
-          <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-blue-900 flex items-center gap-2">
-                <div className="p-2 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
-                  <Shield className="w-4 h-4 text-purple-600" />
-                </div>
-                Team Approvals
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-xs text-gray-600 mb-4">Manage team approval requests</p>
-              <button 
-                onClick={() => setActiveTab('approvals')}
-                className="bg-purple-600 text-white hover:bg-purple-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
-              >
-                View Approvals
-              </button>
-            </CardContent>
-          </Card>
-          
-          {/* Time Tracking */}
-          <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-blue-900 flex items-center gap-2">
-                <div className="p-2 bg-teal-50 rounded-lg group-hover:bg-teal-100 transition-colors">
-                  <Clock className="w-4 h-4 text-teal-600" />
-                </div>
-                Time Tracking
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-xs text-gray-600 mb-4">Track your work hours and attendance</p>
-              <button 
-                onClick={() => setActiveTab('time')}
-                className="bg-teal-600 text-white hover:bg-teal-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
-              >
-                Track Time
-              </button>
-            </CardContent>
-          </Card>
-          
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {/* Team Management */}
           <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-blue-900 flex items-center gap-2">
-                <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
-                  <Users className="w-4 h-4 text-emerald-600" />
+                <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                  <Users className="w-4 h-4 text-blue-600" />
                 </div>
                 Team Management
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xs text-gray-600 mb-4">Manage team members and performance</p>
+              <p className="text-xs text-blue-600 mb-4">Manage team members and assignments</p>
               <button 
                 onClick={() => setActiveTab('team')}
-                className="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
+                className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
               >
                 Manage Team
               </button>
             </CardContent>
           </Card>
           
-          {/* KPI Management */}
-          <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group">
+          {/* Team Approvals */}
+          <Card className="border border-sky-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-blue-900 flex items-center gap-2">
-                <div className="p-2 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
-                  <FileText className="w-4 h-4 text-indigo-600" />
+              <CardTitle className="text-sm font-semibold text-sky-900 flex items-center gap-2">
+                <div className="p-2 bg-sky-50 rounded-lg group-hover:bg-sky-100 transition-colors">
+                  <CheckCircle className="w-4 h-4 text-sky-600" />
                 </div>
-                KPI Management
+                Team Approvals
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xs text-gray-600 mb-4">Monitor and manage team KPIs</p>
+              <p className="text-xs text-sky-600 mb-4">Review and approve team requests</p>
               <button 
-                onClick={() => setActiveTab('kpis')}
-                className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
+                onClick={() => setActiveTab('approvals')}
+                className="bg-sky-600 text-white hover:bg-sky-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
               >
-                View KPIs
+                View Approvals
               </button>
-            </CardContent>
-          </Card>
-          
-          {/* Reports */}
-          <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-blue-900 flex items-center gap-2">
-                <div className="p-2 bg-rose-50 rounded-lg group-hover:bg-rose-100 transition-colors">
-                  <BarChart3 className="w-4 h-4 text-rose-600" />
-                </div>
-                Reports
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-xs text-gray-600 mb-4">Generate and view team reports</p>
-              <button 
-                onClick={() => setActiveTab('reports')}
-                className="bg-rose-600 text-white hover:bg-rose-700 px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors w-full"
-              >
-                View Reports
-              </button>
-            </CardContent>
-          </Card>
-          
-          {/* Chat (non-interactive) */}
-          <Card className="border border-gray-200 shadow-sm rounded-xl">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                <div className="p-2 bg-cyan-50 rounded-lg">
-                  <MessageSquare className="w-4 h-4 text-cyan-600" />
-                </div>
-                Chat
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-xs text-gray-600 mb-4">Chat is always available in the bottom right corner</p>
-              <div className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-xs font-medium text-center">
-                Always Available
-              </div>
             </CardContent>
           </Card>
         </div>
