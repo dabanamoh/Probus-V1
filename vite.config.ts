@@ -17,6 +17,27 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@/ui": path.resolve(__dirname, "./src/portals/shared/ui"),
+      "@/components": path.resolve(__dirname, "./src/portals/shared/components"),
+      "@/components/layout/DashboardLayout": path.resolve(__dirname, "./src/portals/shared/components/layout/DashboardLayout.tsx"),
     },
   },
+  // Add build optimizations
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+          data: ['@tanstack/react-query'],
+        }
+      }
+    },
+    // Reduce chunk size warnings
+    chunkSizeWarningLimit: 1000,
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+  }
 }));

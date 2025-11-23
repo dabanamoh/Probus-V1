@@ -1,73 +1,176 @@
-# Welcome to your Lovable project
+# Probus Employee Productivity Suite
 
-## Project info
+## 📖 Complete Application Guide
 
-**URL**: https://lovable.dev/projects/a3acadea-7d1d-421a-addf-437034d21fb7
+**📚 For detailed documentation on how to use the application from login to all dashboard features, please see:**
 
-## How can I edit this code?
+👉 **[APPLICATION_GUIDE.md](APPLICATION_GUIDE.md)** - Complete user manual covering:
+- 🔐 Login & Authentication Process
+- 🏢 Admin Dashboard - Complete Management Suite  
+- 👨‍💼 Employee Dashboard - Personal Productivity Hub
+- 👨‍💼 Manager Dashboard - Team Leadership Interface
+- 📝 Employee Onboarding Process
+- 🔧 Technical Features & AI Analytics
 
-There are several ways of editing your application.
+## Quick Demo Access
 
-**Use Lovable**
+| Role | Email | Password | Dashboard |
+|------|--------|----------|----------|
+| **Admin** | `admin@probusemployee.com` | `AdminPass123!` | `/` (Admin Dashboard) |
+| **Employee** | `employee@probusemployee.com` | `EmployeePass123!` | `/app` (Employee Dashboard) |
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/a3acadea-7d1d-421a-addf-437034d21fb7) and start prompting.
+## Project Overview
 
-Changes made via Lovable will be committed automatically to this repo.
+The Probus Employee Productivity Suite is a comprehensive employee-facing dashboard that serves as the data-generation engine for the Admin Analytics Dashboard. Every interaction within this suite is monitored and analyzed by AI to generate risk assessments, KPIs, and compliance scores.
 
-**Use your preferred IDE**
+## Core Product Concept
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+This Employee Dashboard is a fully-functional workspace where employees perform their daily tasks (chat, email, manage tasks, clock in). All interactions are logged and sent to the backend for AI analysis in the admin panel.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Features
 
-Follow these steps:
+### 1. Unified Landing Page / Workspace
+- Daily summary dashboard showing unread messages, upcoming tasks, team announcements
+- Quick clock-in/out widget with geolocation tracking
+- Comprehensive employee activity statistics including:
+  - Pending emails and unread chats
+  - Announcements and leave days
+  - Late resumption days and task completion
+  - Upcoming meetings and missed calls
+  - Visual charts for task completion and communication activity
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 2. Communication Hub
+- Real-time chat interface (Slack/Discord-like) with direct messages and team channels
+- Integrated email client for sending, receiving, and organizing emails
+- Voice and video calling capabilities
+- Meeting scheduling and group meeting support
+- Call and meeting recording functionality
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 3. Productivity & Task Management
+- Personal task manager for individual to-do lists
+- Team project management with Kanban board or list view
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 4. Personal Dashboard & Tools
+- Time tracking with geofenced clock-in/out
+- Profile management and document access
+- Company directory with searchable employee contacts
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+### 5. Rules & Ethics Center
+- Access to company policies, code of conduct, and ethics guidelines
+- Supports compliance monitoring by ensuring employee access to rules
 
-**Edit a file directly in GitHub**
+### 6. Whistleblower Reporting
+- Anonymous incident reporting system for employees to report concerns
+- Confidentiality guarantees to protect employee identity
+- Categories for different types of incidents (financial, HR, safety, etc.)
+- Option for non-anonymous reporting with contact information
+- Comprehensive reporting guidelines and immediate help resources
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Technical Implementation
 
-**Use GitHub Codespaces**
+### Framework & Styling
+- Built with React + Vite + Tailwind CSS
+- Follows the same UI components, color scheme, and framework as the Admin Dashboard
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Data Logging & Monitoring
+All user activities are logged for AI analysis:
 
-## What technologies are used for this project?
+1. **User Activity Events**: Logins, logouts, session duration, page views
+2. **Chat Monitoring**: Every message sent, file shared, and emoji reaction
+3. **Call Monitoring**: Voice and video calls with duration and participant tracking
+4. **Meeting Monitoring**: Scheduled meetings with attendance and recording status
+5. **Email Monitoring**: All sent, received, and deleted emails
+6. **Time Tracking**: Clock-in/out events with precise timestamps and geolocation
+7. **Task/Project Updates**: Changes to task status, deadlines, and time spent
 
-This project is built with:
+### Rebranding
+All instances of "Integrity Merit" have been replaced with "Probus".
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Installation
 
-## How can I deploy this project?
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-Simply open [Lovable](https://lovable.dev/projects/a3acadea-7d1d-421a-addf-437034d21fb7) and click on Share -> Publish.
+## Usage
 
-## Can I connect a custom domain to my Lovable project?
+The Employee Dashboard is accessible at `/app` route, separate from the admin interface at `/admin`.
 
-Yes, you can!
+To populate sample chat data:
+1. Navigate to the chat interface
+2. Click the "Filter" icon in the chat sidebar
+3. Confirm the data population when prompted
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Data Flow
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Employee interactions in the dashboard generate audit events
+2. Events are logged and sent to the backend
+3. Backend processes events for AI analysis
+4. AI analysis results are displayed in the Admin Analytics Dashboard
+
+## Modules
+
+### Employee Dashboard (User Interface)
+- `/app/dashboard` - Main landing page with daily summary and activity statistics
+- `/app/chat` - Real-time messaging interface with calling and meeting features
+- `/app/mail` - Email client
+- `/app/tasks` - Task and project management
+- `/app/time` - Time tracking and clock-in/out
+- `/app/profile` - Personal profile and documents
+- `/app/directory` - Company employee directory
+- `/app/rules` - Rules and ethics center
+- `/app/whistleblower` - Anonymous incident reporting system
+
+### Audit Logging Services
+- `auditService.ts` - Core logging functionality
+- `chatService.ts` - Chat event logging
+- `callService.ts` - Voice/video call logging
+- `meetingService.ts` - Meeting scheduling and tracking
+- `emailService.ts` - Email activity logging
+- `taskService.ts` - Task activity logging
+
+### Employee Statistics
+- `useEmployeeStats.ts` - Hook for fetching employee activity statistics
+- `EmployeeStatsChart.tsx` - Component for visualizing employee statistics
+
+### Whistleblower Reporting
+- `Whistleblower.tsx` - Component for anonymous incident reporting
+
+## Development Guidelines
+
+1. All new features must implement audit logging
+2. Follow the existing UI component patterns
+3. Maintain consistency with the Admin Dashboard styling
+4. Ensure all data-generating actions are properly logged
+
+## Future Enhancements
+
+1. Integration with third-party email providers (Gmail, Outlook)
+2. Advanced geofencing for location-based time tracking
+3. Mobile application development
+4. Enhanced AI analysis dashboards
+5. Advanced reporting and analytics features
+6. Screen sharing capabilities
+7. Advanced meeting features (polls, whiteboard, etc.)
+
+## Demo Credentials
+
+For authorized users and testing purposes, the following demo credentials are available:
+
+### Admin Dashboard
+- Email: `admin@probusemployee.com`
+- Password: `AdminPass123!`
+
+### Employee Dashboard
+- Email: `employee@probusemployee.com`
+- Password: `EmployeePass123!`
+
+## License
+
+This project is proprietary software developed for Probus.

@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
+import { useState, useEffect, useCallback } from 'react';
+import { localDb } from '@/integrations/local-db';
+import type { Tables } from '@/integrations/local-db/types';
 
 type Message = Tables<'messages'>;
 
@@ -10,48 +9,12 @@ export const useMessages = (conversationId: string | null) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!conversationId) return;
-
-    fetchMessages();
-    
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('messages-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          console.log('Real-time message update:', payload);
-          if (payload.eventType === 'INSERT') {
-            setMessages(prev => [...prev, payload.new as Message]);
-          } else if (payload.eventType === 'UPDATE') {
-            setMessages(prev => 
-              prev.map(msg => msg.id === payload.new.id ? payload.new as Message : msg)
-            );
-          } else if (payload.eventType === 'DELETE') {
-            setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [conversationId]);
-
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await localDb
         .from('messages')
         .select('*')
         .eq('conversation_id', conversationId)
@@ -64,13 +27,23 @@ export const useMessages = (conversationId: string | null) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (!conversationId) return;
+
+    fetchMessages();
+
+    // Set up real-time subscription
+    // Note: Local database implementation may not support real-time subscriptions
+    // We'll need to implement a polling mechanism or use a different approach
+  }, [conversationId, fetchMessages]);
 
   const sendMessage = async (content: string) => {
     if (!conversationId || !content.trim()) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await localDb
         .from('messages')
         .insert({
           conversation_id: conversationId,
@@ -81,6 +54,9 @@ export const useMessages = (conversationId: string | null) => {
         });
 
       if (error) throw error;
+
+      // Refresh messages after sending
+      fetchMessages();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
     }
