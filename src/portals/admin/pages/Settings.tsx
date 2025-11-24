@@ -5,11 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
 import { Button } from "../../shared/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Settings as SettingsIcon, Users, Building, Shield, Bell, LogOut } from 'lucide-react';
+import { Settings as SettingsIcon, Users, Building, Shield, Bell, LogOut, UserCog } from 'lucide-react';
 import PermissionsSettings from '../components/settings/PermissionsSettings';
 import CompanySettings from '../components/settings/CompanySettings';
 import SecuritySettings from '../components/settings/SecuritySettings';
 import NotificationSettings from '../components/settings/NotificationSettings';
+import UserManagement from '../components/UserManagement';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
@@ -46,8 +47,12 @@ const Settings = () => {
             </div>
           </div>
 
-          <Tabs defaultValue="permissions" className="w-full max-w-full overflow-x-hidden">
-            <TabsList className="!h-auto grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 p-2 bg-white border border-blue-200 rounded-xl shadow-sm max-w-full">
+          <Tabs defaultValue="users" className="w-full max-w-full overflow-x-hidden">
+            <TabsList className="!h-auto grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 p-2 bg-white border border-blue-200 rounded-xl shadow-sm max-w-full">
+              <TabsTrigger value="users" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-blue-50">
+                <UserCog className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate hidden sm:inline">Users</span>
+              </TabsTrigger>
               <TabsTrigger value="permissions" className="flex items-center justify-center gap-2 text-sm px-3 py-3 min-h-[48px] h-auto leading-normal rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-blue-50">
                 <Users className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate hidden sm:inline">Permissions</span>
@@ -69,6 +74,22 @@ const Settings = () => {
                 <span className="truncate hidden sm:inline">Sign Out</span>
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="users" className="mt-6">
+              <Card className="border border-blue-200 shadow-sm rounded-xl">
+                <CardHeader className="border-b border-blue-200 bg-white rounded-t-xl p-5">
+                  <CardTitle className="text-lg font-semibold text-blue-900 flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 rounded-lg">
+                      <UserCog className="w-5 h-5 text-blue-600" />
+                    </div>
+                    User Account Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5">
+                  <UserManagement />
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             <TabsContent value="permissions" className="mt-6">
               <Card className="border border-blue-200 shadow-sm rounded-xl">

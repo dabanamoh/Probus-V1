@@ -35,11 +35,24 @@ interface Employee {
   next_of_kin_email?: string;
   emergency_contact?: string;
   emergency_contact_email?: string;
+  line_manager_id?: string;
+  line_manager_name?: string;
+  line_manager_role?: string;
 }
 
 interface Department {
   id: string;
   name: string;
+}
+
+interface Manager {
+  id: string;
+  name: string;
+  position: string;
+  department_id: string;
+  department?: {
+    name: string;
+  };
 }
 
 interface UserRole {
@@ -76,6 +89,9 @@ interface EmployeeFormData {
   nextOfKinEmail: string;
   emergencyContact: string;
   emergencyContactEmail: string;
+  lineManagerId: string;
+  lineManagerName: string;
+  lineManagerRole: string;
 }
 
 const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: () => void }) => {
@@ -126,6 +142,11 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
     nextOfKinEmail: employee.next_of_kin_email || '',
     emergencyContact: employee.emergency_contact || '',
     emergencyContactEmail: employee.emergency_contact_email || '',
+
+    // Line Manager
+    lineManagerId: employee.line_manager_id || '',
+    lineManagerName: employee.line_manager_name || '',
+    lineManagerRole: employee.line_manager_role || '',
   });
 
   const { data: departments } = useQuery({
@@ -139,29 +160,50 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
     },
   });
 
+  // Fetch potential line managers (all employees except current one)
+  const { data: availableManagers } = useQuery({
+    queryKey: ['available-managers', employee.id],
+    queryFn: async () => {
+      const result = await localDb
+        .from('employees')
+        .select(`
+          id,
+          name,
+          position,
+          department_id,
+          department:departments!employees_department_id_fkey(name)
+        `);
+      if (result.error) throw result.error;
+      // Filter out the current employee from the list
+      const managers = (result.data || []).filter((emp: any) => emp.id !== employee.id);
+      return managers as Manager[];
+    },
+  });
+
   // Fetch user role
   const { data: userRole } = useQuery({
     queryKey: ['user-role', employee.id],
     queryFn: async () => {
       const result = await localDb
         .from('user_roles')
-        .select('id, user_id, role, created_at')
+        .select('id, user_id, role_id, created_at')
         .eq('user_id', employee.id);
 
       if (result.error) {
         // If no role found, return default role
-        return { role: 'employee' };
+        return { role: 'employee', role_id: 'employee' };
       }
 
       // Return the first role if exists, otherwise default
-      return result.data && result.data.length > 0 ? result.data[0] as UserRole : { role: 'employee' };
+      const roleData: any = result.data && result.data.length > 0 ? result.data[0] : { role_id: 'employee' };
+      return { role: roleData.role_id || 'employee', role_id: roleData.role_id || 'employee' };
     },
   });
 
   // Set user role when data is fetched
   useEffect(() => {
     if (userRole) {
-      setFormData(prev => ({ ...prev, userRole: userRole.role }));
+      setFormData(prev => ({ ...prev, userRole: userRole.role || userRole.role_id || 'employee' }));
     }
   }, [userRole]);
 
@@ -195,7 +237,22 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
           next_of_kin_email: employeeData.nextOfKinEmail || null,
           emergency_contact: employeeData.emergencyContact || null,
           emergency_contact_email: employeeData.emergencyContactEmail || null,
-        });
+        } as any);
+
+      // Update line manager separately if the field exists
+      try {
+        await localDb
+          .from('employees')
+          .eq('id', employee.id)
+          .update({
+            line_manager_id: employeeData.lineManagerId || null,
+            line_manager_name: employeeData.lineManagerName || null,
+            line_manager_role: employeeData.lineManagerRole || null,
+          } as any);
+      } catch (lineManagerError) {
+        // Ignore error if line_manager fields don't exist in schema yet
+        console.log('Line manager fields may not exist in schema:', lineManagerError);
+      }
 
       if (employeeResult.error) throw employeeResult.error;
 
@@ -214,18 +271,18 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
           .from('user_roles')
           .eq('id', roleId)
           .update({
-            role: employeeData.userRole,
+            role_id: employeeData.userRole,
             created_at: new Date().toISOString() // Update the created_at timestamp to indicate modification
-          });
+          } as any);
       } else {
         // Insert new role
         roleResult = await localDb
           .from('user_roles')
           .insert([{
             user_id: employee.id,
-            role: employeeData.userRole,
+            role_id: employeeData.userRole,
             created_at: new Date().toISOString()
-          }]);
+          }] as any);
       }
 
       if (roleResult.error) throw roleResult.error;
@@ -268,13 +325,14 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="personal">Personal</TabsTrigger>
             <TabsTrigger value="address">Address</TabsTrigger>
             <TabsTrigger value="work">Work</TabsTrigger>
             <TabsTrigger value="qualification">Education</TabsTrigger>
             <TabsTrigger value="relations">Emergency</TabsTrigger>
+            <TabsTrigger value="linemanager">Line Manager</TabsTrigger>
             <TabsTrigger value="role">Role</TabsTrigger>
           </TabsList>
 
@@ -300,6 +358,127 @@ const EditEmployeeForm = ({ employee, onClose }: { employee: Employee; onClose: 
 
           <TabsContent value="relations" className="space-y-4">
             <RelationsTab formData={formData} onInputChange={handleInputChange} />
+          </TabsContent>
+
+          <TabsContent value="linemanager" className="space-y-4">
+            <div className="space-y-4">
+              <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+                <h3 className="text-lg font-medium mb-4">Line Manager Assignment</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Assign a line manager who will oversee this employee. The line manager will be the first approver in approval flows for leave requests, expenses, and other employee requests.
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Line Manager / Reports To</label>
+                    <select
+                      value={formData.lineManagerId}
+                      onChange={(e) => {
+                        const selectedManager = availableManagers?.find(m => m.id === e.target.value);
+                        if (selectedManager) {
+                          handleInputChange('lineManagerId', e.target.value);
+                          handleInputChange('lineManagerName', selectedManager.name);
+                          handleInputChange('lineManagerRole', selectedManager.position);
+                        } else {
+                          // Clear line manager if "None" is selected
+                          handleInputChange('lineManagerId', '');
+                          handleInputChange('lineManagerName', '');
+                          handleInputChange('lineManagerRole', '');
+                        }
+                      }}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">None - No Line Manager</option>
+                      
+                      {/* Same Department Managers */}
+                      {formData.departmentId && formData.departmentId !== 'none' && (
+                        <>
+                          <optgroup label="Same Department">
+                            {availableManagers
+                              ?.filter(manager => manager.department_id === formData.departmentId)
+                              .map(manager => (
+                                <option key={manager.id} value={manager.id}>
+                                  {manager.name} - {manager.position}
+                                </option>
+                              ))
+                            }
+                          </optgroup>
+                          <optgroup label="Other Departments">
+                            {availableManagers
+                              ?.filter(manager => manager.department_id !== formData.departmentId)
+                              .map(manager => (
+                                <option key={manager.id} value={manager.id}>
+                                  {manager.name} - {manager.position} ({manager.department?.name || 'General'})
+                                </option>
+                              ))
+                            }
+                          </optgroup>
+                        </>
+                      )}
+                      
+                      {/* All Managers if no department selected */}
+                      {(!formData.departmentId || formData.departmentId === 'none') && (
+                        <optgroup label="All Employees">
+                          {availableManagers?.map(manager => (
+                            <option key={manager.id} value={manager.id}>
+                              {manager.name} - {manager.position} ({manager.department?.name || 'General'})
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                    </select>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Select who this employee reports to. This affects all approval workflows.
+                    </p>
+                  </div>
+
+                  {/* Current Line Manager Display */}
+                  {formData.lineManagerId && (
+                    <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Current Line Manager</h4>
+                      <div className="space-y-1 text-sm text-blue-700 dark:text-blue-300">
+                        <p><strong>Name:</strong> {formData.lineManagerName}</p>
+                        <p><strong>Position:</strong> {formData.lineManagerRole}</p>
+                      </div>
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleInputChange('lineManagerId', '');
+                            handleInputChange('lineManagerName', '');
+                            handleInputChange('lineManagerRole', '');
+                          }}
+                          className="text-xs text-red-600 dark:text-red-400 hover:underline font-medium"
+                        >
+                          Remove Line Manager
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No Line Manager Display */}
+                  {!formData.lineManagerId && (
+                    <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                      <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">⚠️ No Line Manager Assigned</h4>
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                        This employee has no line manager assigned. Their requests may need to go directly to HR or Admin for approval.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Info Box */}
+                  <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border">
+                    <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-2">💡 How Line Managers Work</h4>
+                    <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1 list-disc list-inside">
+                      <li>Line managers are the first approvers for employee requests</li>
+                      <li>Leave requests, expenses, and time-off go through line manager first</li>
+                      <li>Line managers can view their team's performance and activities</li>
+                      <li>You can change or remove line managers at any time</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="role" className="space-y-4">

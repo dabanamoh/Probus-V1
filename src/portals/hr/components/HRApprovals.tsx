@@ -8,16 +8,23 @@ import {
   Calendar,
   User,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  X,
+  Bell,
+  ArrowRight,
+  Timer,
+  Users
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
 import { Button } from "../../shared/ui/button";
 import { Badge } from "../../shared/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../shared/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../shared/ui/dialog";
 
 const HRApprovals = () => {
   const [activeTab, setActiveTab] = useState('pending');
+  const [viewingApproval, setViewingApproval] = useState<any>(null);
 
   // Mock approval data
   const approvals = [
@@ -31,7 +38,32 @@ const HRApprovals = () => {
       requestedDates: 'Dec 20, 2024 - Jan 3, 2025',
       status: 'pending',
       priority: 'medium',
-      department: 'Engineering'
+      department: 'Engineering',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'John Smith',
+          approverRole: 'Direct Manager',
+          approverDepartment: 'Engineering',
+          status: 'approved',
+          order: 1,
+          assignedDate: '2024-11-15T09:00:00',
+          approvedDate: '2024-11-15T14:30:00',
+          timeTaken: '5 hours 30 minutes',
+          comments: 'Approved. Team coverage is arranged.'
+        },
+        {
+          id: '2',
+          approverName: 'Lisa Brown',
+          approverRole: 'HR Manager',
+          approverDepartment: 'Human Resources',
+          status: 'pending',
+          order: 2,
+          assignedDate: '2024-11-15T14:30:00',
+          timeTaken: null,
+          comments: ''
+        }
+      ]
     },
     {
       id: 'APP002',
@@ -43,7 +75,43 @@ const HRApprovals = () => {
       amount: '$2,500',
       status: 'pending',
       priority: 'high',
-      department: 'Marketing'
+      department: 'Marketing',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'Robert Davis',
+          approverRole: 'Department Manager',
+          approverDepartment: 'Marketing',
+          status: 'approved',
+          order: 1,
+          assignedDate: '2024-11-10T09:00:00',
+          approvedDate: '2024-11-10T11:20:00',
+          timeTaken: '2 hours 20 minutes',
+          comments: 'Good for professional development.'
+        },
+        {
+          id: '2',
+          approverName: 'Lisa Brown',
+          approverRole: 'HR Manager',
+          approverDepartment: 'Human Resources',
+          status: 'pending',
+          order: 2,
+          assignedDate: '2024-11-10T11:20:00',
+          timeTaken: null,
+          comments: ''
+        },
+        {
+          id: '3',
+          approverName: 'David Kim',
+          approverRole: 'Finance Manager',
+          approverDepartment: 'Finance',
+          status: 'waiting',
+          order: 3,
+          assignedDate: null,
+          timeTaken: null,
+          comments: ''
+        }
+      ]
     },
     {
       id: 'APP003',
@@ -55,7 +123,33 @@ const HRApprovals = () => {
       effectiveDate: 'Jan 1, 2025',
       status: 'approved',
       priority: 'high',
-      department: 'HR'
+      department: 'HR',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'Lisa Brown',
+          approverRole: 'HR Manager',
+          approverDepartment: 'Human Resources',
+          status: 'approved',
+          order: 1,
+          assignedDate: '2024-11-08T09:00:00',
+          approvedDate: '2024-11-08T15:00:00',
+          timeTaken: '6 hours',
+          comments: 'Well-deserved promotion. Excellent performance.'
+        },
+        {
+          id: '2',
+          approverName: 'CEO Office',
+          approverRole: 'Executive Approval',
+          approverDepartment: 'Executive',
+          status: 'approved',
+          order: 2,
+          assignedDate: '2024-11-08T15:00:00',
+          approvedDate: '2024-11-09T10:30:00',
+          timeTaken: '19 hours 30 minutes',
+          comments: 'Approved. Update contract accordingly.'
+        }
+      ]
     },
     {
       id: 'APP004',
@@ -66,7 +160,32 @@ const HRApprovals = () => {
       requestDate: '2024-11-05',
       status: 'pending',
       priority: 'low',
-      department: 'Finance'
+      department: 'Finance',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'Michael Johnson',
+          approverRole: 'Department Head',
+          approverDepartment: 'Finance',
+          status: 'approved',
+          order: 1,
+          assignedDate: '2024-11-05T09:00:00',
+          approvedDate: '2024-11-05T16:45:00',
+          timeTaken: '7 hours 45 minutes',
+          comments: 'Employee has proven remote work capability.'
+        },
+        {
+          id: '2',
+          approverName: 'Lisa Brown',
+          approverRole: 'HR Manager',
+          approverDepartment: 'Human Resources',
+          status: 'pending',
+          order: 2,
+          assignedDate: '2024-11-05T16:45:00',
+          timeTaken: null,
+          comments: ''
+        }
+      ]
     }
   ];
 
@@ -133,11 +252,18 @@ const HRApprovals = () => {
   };
 
   const handleViewDetails = (approvalId: string) => {
-    console.log('View details:', approvalId);
+    const approval = approvals.find(a => a.id === approvalId);
+    if (approval) {
+      setViewingApproval(approval);
+    }
+  };
+
+  const handleSendReminder = (approverName: string) => {
+    // In a real app, this would send a notification/email to the approver
     const toastDiv = document.createElement('div');
-    toastDiv.innerHTML = `<div style="position:fixed;bottom:20px;right:20px;background:white;padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.15);border:1px solid #3b82f6;z-index:9999;"><div style="display:flex;align-items:center;gap:12px;"><div style="background:#dbeafe;padding:8px;border-radius:8px;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 10C2.5 10 5 4.167 10 4.167C15 4.167 17.5 10 17.5 10C17.5 10 15 15.833 10 15.833C5 15.833 2.5 10 2.5 10Z" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><p style="margin:0;font-weight:600;color:#1e3a8a;font-size:14px;">Viewing Details</p><p style="margin:4px 0 0 0;color:#6b7280;font-size:12px;">Request ${approvalId}</p></div></div></div>`;
+    toastDiv.innerHTML = `<div style="position:fixed;bottom:20px;right:20px;background:white;padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.15);border:1px solid #3b82f6;z-index:9999;"><div style="display:flex;align-items:center;gap:12px;"><div style="background:#dbeafe;padding:8px;border-radius:8px;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 6V10L13 13" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="10" r="7" stroke="#2563eb" stroke-width="2"/></svg></div><div><p style="margin:0;font-weight:600;color:#1e3a8a;font-size:14px;">Reminder Sent</p><p style="margin:4px 0 0 0;color:#6b7280;font-size:12px;">Notified ${approverName}</p></div></div></div>`;
     document.body.appendChild(toastDiv);
-    setTimeout(() => toastDiv.remove(), 2500);
+    setTimeout(() => toastDiv.remove(), 3000);
   };
 
   return (
@@ -312,6 +438,141 @@ const HRApprovals = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* View Details Dialog */}
+      <Dialog open={!!viewingApproval} onOpenChange={() => setViewingApproval(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span className="text-xl font-bold text-blue-900">Approval Request Details</span>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setViewingApproval(null)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </DialogTitle>
+            <DialogDescription>
+              Complete information about this approval request
+            </DialogDescription>
+          </DialogHeader>
+          
+          {viewingApproval && (
+            <div className="space-y-6">
+              {/* Request Information */}
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    {getTypeIcon(viewingApproval.type)}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900">{viewingApproval.title}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{viewingApproval.description}</p>
+                    <div className="flex gap-2 mt-2">
+                      {getStatusBadge(viewingApproval.status)}
+                      {getPriorityBadge(viewingApproval.priority)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Request Details Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500">Request ID</p>
+                  <p className="text-base font-semibold text-gray-900 mt-1">{viewingApproval.id}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500">Request Type</p>
+                  <p className="text-base font-semibold text-gray-900 mt-1 capitalize">
+                    {viewingApproval.type.replace('_', ' ')}
+                  </p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500">Employee</p>
+                  <p className="text-base font-semibold text-gray-900 mt-1">{viewingApproval.employee}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500">Department</p>
+                  <p className="text-base font-semibold text-gray-900 mt-1">{viewingApproval.department}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500">Request Date</p>
+                  <p className="text-base font-semibold text-gray-900 mt-1">
+                    {new Date(viewingApproval.requestDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500">Status</p>
+                  <div className="mt-1">{getStatusBadge(viewingApproval.status)}</div>
+                </div>
+              </div>
+
+              {/* Type-specific details */}
+              {viewingApproval.type === 'leave' && viewingApproval.requestedDates && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                    <p className="text-sm font-medium text-blue-900">Requested Dates</p>
+                  </div>
+                  <p className="text-base font-semibold text-blue-800">{viewingApproval.requestedDates}</p>
+                </div>
+              )}
+
+              {viewingApproval.type === 'expense' && viewingApproval.amount && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="w-4 h-4 text-green-600" />
+                    <p className="text-sm font-medium text-green-900">Amount Requested</p>
+                  </div>
+                  <p className="text-2xl font-bold text-green-800">{viewingApproval.amount}</p>
+                </div>
+              )}
+
+              {viewingApproval.type === 'promotion' && viewingApproval.effectiveDate && (
+                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <User className="w-4 h-4 text-purple-600" />
+                    <p className="text-sm font-medium text-purple-900">Effective Date</p>
+                  </div>
+                  <p className="text-base font-semibold text-purple-800">{viewingApproval.effectiveDate}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {viewingApproval.status === 'pending' && (
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    onClick={() => {
+                      handleApprove(viewingApproval.id);
+                      setViewingApproval(null);
+                    }}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Approve Request
+                  </Button>
+                  <Button
+                    className="flex-1 bg-red-600 hover:bg-red-700"
+                    onClick={() => {
+                      handleReject(viewingApproval.id);
+                      setViewingApproval(null);
+                    }}
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Reject Request
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

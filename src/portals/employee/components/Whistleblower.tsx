@@ -6,8 +6,6 @@ import { Input } from "../../shared/ui/input";
 import { Label } from "../../shared/ui/label";
 import { Alert, AlertDescription } from "../../shared/ui/alert";
 import { AlertCircle, Shield, FileText, Mail, Phone } from 'lucide-react';
-// TODO: Re-enable when auditService is available
-// import { logUserActivity } from '@/employee-app/services/auditService';
 
 const Whistleblower = () => {
   const [report, setReport] = useState({

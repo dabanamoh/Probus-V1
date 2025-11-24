@@ -339,23 +339,14 @@ const Employees = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 w-full sm:w-auto justify-center"
-              onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-            </Button>
-            <Button
-              className="flex items-center gap-2 w-full sm:w-auto justify-center bg-blue-600 hover:bg-blue-700"
-              onClick={() => setIsAddEmployeeOpen(true)}
-            >
-              <Plus className="w-4 h-4" />
-              Add Employee
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 w-full sm:w-auto justify-center"
+            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+          </Button>
         </div>
 
         <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -429,6 +420,7 @@ const Employees = () => {
                       <TableHead>Name</TableHead>
                       <TableHead>Position</TableHead>
                       <TableHead>Department</TableHead>
+                      <TableHead>Reports To</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -437,13 +429,13 @@ const Employees = () => {
                   <TableBody>
                     {isLoadingEmployees ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8">
+                        <TableCell colSpan={8} className="text-center py-8">
                           Loading employees...
                         </TableCell>
                       </TableRow>
                     ) : employees?.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                           No employees found
                         </TableCell>
                       </TableRow>
@@ -465,6 +457,16 @@ const Employees = () => {
                             <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-200">
                               {employee.department?.name || 'General'}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {(employee as any).line_manager_name ? (
+                              <div className="text-sm">
+                                <div className="font-medium text-gray-900">{(employee as any).line_manager_name}</div>
+                                <div className="text-xs text-gray-500">{(employee as any).line_manager_role}</div>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">No manager</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">

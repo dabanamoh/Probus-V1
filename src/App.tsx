@@ -9,6 +9,7 @@ import EmployeeApp from "./portals/shared/pages/EmployeeApp";
 import Login from "./portals/shared/pages/Login";
 import Registration from "./portals/shared/pages/Registration";
 import Onboarding from "./portals/employee/pages/Onboarding";
+import FirstLoginWizard from "./portals/shared/components/FirstLoginWizard";
 import NotFound from "./portals/shared/pages/NotFound";
 import FloatingChat from "./portals/shared/components/misc/FloatingChat";
 import CommandPalette from "./portals/shared/components/misc/CommandPalette";
@@ -20,9 +21,11 @@ import RootRedirect from "./portals/shared/components/layout/RootRedirect";
 // Lazy load pages for better performance - MVP ONLY
 const Departments = lazy(() => import("./portals/admin/pages/Departments"));
 const Employees = lazy(() => import("./portals/admin/pages/Employees"));
+const PendingEmployees = lazy(() => import("./portals/admin/pages/PendingEmployees"));
 const Notices = lazy(() => import("./portals/admin/pages/Notices"));
 const Settings = lazy(() => import("./portals/admin/pages/Settings"));
-const MyWork = lazy(() => import("./portals/employee/pages/MyWork"));
+const Notifications = lazy(() => import("./portals/admin/pages/Notifications"));
+const AdminApprovals = lazy(() => import("./portals/admin/pages/Approvals"));
 const SafetyDashboard = lazy(() => import("./portals/admin/pages/SafetyDashboard"));
 const ManagerDashboard = lazy(() => import("./portals/manager/pages/Dashboard"));
 const HRDashboard = lazy(() => import("./portals/hr/pages/Dashboard"));
@@ -62,16 +65,7 @@ const App = () => {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Registration />} />
                   <Route path="/onboarding" element={<Onboarding />} />
-
-
-                  {/* My Work - Universal Inbox for all roles */}
-                  <Route path="/work" element={
-                    <ProtectedRoute allowedRoles={['admin', 'employee', 'manager', 'hr']}>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <MyWork />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
+                  <Route path="/first-login" element={<FirstLoginWizard />} />
 
                   {/* Safety & Productivity Dashboard */}
                   <Route path="/safety" element={
@@ -85,30 +79,43 @@ const App = () => {
                   {/* Admin Routes */}
                   <Route path="/" element={<RootRedirect />} />
                   <Route path="/admin" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'owner']}>
                       <Index />
                     </ProtectedRoute>
                   } />
                   <Route path="/departments" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'owner']}>
                       <Suspense fallback={<LoadingSpinner />}>
                         <Departments />
                       </Suspense>
                     </ProtectedRoute>
                   } />
                   <Route path="/employees" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'owner']}>
                       <Suspense fallback={<LoadingSpinner />}>
                         <Employees />
                       </Suspense>
                     </ProtectedRoute>
                   } />
 
+                  <Route path="/pending-employees" element={
+                    <ProtectedRoute allowedRoles={['admin', 'owner']}>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <PendingEmployees />
+                      </Suspense>
+                    </ProtectedRoute>
+                  } />
 
-
+                  <Route path="/admin/approvals" element={
+                    <ProtectedRoute allowedRoles={['admin', 'owner']}>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <AdminApprovals />
+                      </Suspense>
+                    </ProtectedRoute>
+                  } />
 
                   <Route path="/notices" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'owner']}>
                       <Suspense fallback={<LoadingSpinner />}>
                         <Notices />
                       </Suspense>
@@ -123,12 +130,25 @@ const App = () => {
                     </ProtectedRoute>
                   } />
 
+                  <Route path="/notifications" element={
+                    <ProtectedRoute allowedRoles={['admin', 'owner']}>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <Notifications />
+                      </Suspense>
+                    </ProtectedRoute>
+                  } />
 
-
-
-                  {/* Manager Routes */}
+                  {/* Leadership Routes (Manager, Supervisor, Director, Head of Department) */}
                   <Route path="/manager/*" element={
-                    <ProtectedRoute allowedRoles={['manager']}>
+                    <ProtectedRoute allowedRoles={['manager', 'supervisor', 'director', 'hod']}>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <ManagerDashboard />
+                      </Suspense>
+                    </ProtectedRoute>
+                  } />
+                  {/* Alias route for future - Leadership Portal */}
+                  <Route path="/leadership/*" element={
+                    <ProtectedRoute allowedRoles={['manager', 'supervisor', 'director', 'hod']}>
                       <Suspense fallback={<LoadingSpinner />}>
                         <ManagerDashboard />
                       </Suspense>
@@ -144,14 +164,13 @@ const App = () => {
                     </ProtectedRoute>
                   } />
 
-                  {/* Employee Routes */}
+                  {/* Employee Routes - Only for employees without management responsibilities */}
                   <Route path="/app/*" element={
-                    <ProtectedRoute allowedRoles={['employee', 'manager', 'admin']}>
+                    <ProtectedRoute allowedRoles={['employee']}>
                       <EmployeeApp />
                     </ProtectedRoute>
                   } />
 
-                  <Route path="/test-chat" element={<div>Test Chat Disabled</div>} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

@@ -18,8 +18,6 @@ import {
   LogOut,
   LogIn
 } from 'lucide-react';
-// TODO: Re-enable when auditService is available
-// import { captureAndLogLocation } from '@/employee-app/services/auditService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/ui/tabs";
 
 interface TimeRecord {

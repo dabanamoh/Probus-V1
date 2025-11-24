@@ -4,7 +4,10 @@ import {
   Settings, 
   Users,
   Shield,
-  ClipboardCheck
+  ClipboardCheck,
+  CheckSquare,
+  CalendarDays,
+  Bell
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../../shared/ui/avatar";
@@ -20,6 +23,10 @@ const HRSidebar = ({ activeTab, setActiveTab, className }: HRSidebarProps) => {
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", active: activeTab === "dashboard" },
     { icon: ClipboardCheck, label: "My Work", id: "approvals", active: activeTab === "approvals" },
+    { icon: CheckSquare, label: "Tasks", id: "tasks", active: activeTab === "tasks" },
+    { icon: CalendarDays, label: "Leave", id: "leave", active: activeTab === "leave" },
+    { icon: Bell, label: "Notifications", id: "notifications", active: activeTab === "notifications" },
+    { icon: Users, label: "Directory", id: "directory", active: activeTab === "directory" },
     { icon: Users, label: "Employees", id: "employees", active: activeTab === "employees" },
     { icon: Shield, label: "Whistleblower", id: "whistleblower", active: activeTab === "whistleblower" }
   ];

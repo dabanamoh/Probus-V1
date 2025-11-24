@@ -215,13 +215,39 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ onClose, currentUser }) => 
 
   // Event Listeners
   useEffect(() => {
-    const handleOpenChat = () => {
+    const handleOpenChat = (event: Event) => {
       setIsExpanded(true);
       setIsMinimized(false);
+      
+      // Check if event has employee details
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail) {
+        const { employeeId, employeeName, callType } = customEvent.detail;
+        
+        // Find or create employee for chat
+        let employee = employees.find(emp => emp.id === employeeId);
+        
+        if (!employee) {
+          // Create a new employee object if not found
+          employee = {
+            id: employeeId,
+            name: employeeName,
+            email: `${employeeName.toLowerCase().replace(/\s+/g, '.')}@company.com`,
+            position: 'Employee',
+            department: 'General',
+            isOnline: true
+          };
+          setEmployees(prev => [...prev, employee!]);
+        }
+        
+        // Start direct chat with this employee
+        startDirectChat(employee);
+      }
     };
+    
     window.addEventListener('openFloatingChat', handleOpenChat);
     return () => window.removeEventListener('openFloatingChat', handleOpenChat);
-  }, []);
+  }, [employees, directChats]);
 
   useEffect(() => {
     if (isDragging) {

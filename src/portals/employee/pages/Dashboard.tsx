@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Mail,
   Calendar,
   Clock,
   User,
@@ -21,28 +20,30 @@ import {
   MessageSquare,
   ClipboardCheck,
   BarChart3,
-  Shield
+  Shield,
+  CheckSquare,
+  MessageCircle
 } from 'lucide-react';
 import Sidebar from '../layouts/EmployeeSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
-// TODO: Re-enable when audit service is available
-// import { captureAndLogLocation, logUserActivity } from '@/integrations/auditService';
+import { Button } from "../../shared/ui/button";
 import TaskManager from '../components/TaskManager';
 import TimeTracking from '../components/TimeTracking';
 import Directory from '../components/Directory';
-import EmailClient from '../components/EmailClient';
+import LeaveManagement from '../components/LeaveManagement';
 import SettingsComponent from '../components/Settings';
 import Whistleblower from '../components/Whistleblower';
 import Apps from '../components/Apps';
 import RulesAndEthics from '../components/RulesAndEthics';
+import NotificationCenter from '../../shared/components/NotificationCenter';
+import NotificationsPage from '../components/NotificationsPage';
+import ChatInterface from '../../shared/components/chat/ChatInterface';
 import EmployeeApprovals from '../components/EmployeeApprovals';
 import PersonalReports from '../components/PersonalReports';
 import Events from '../../admin/pages/Events';
 import Notices from '../../admin/pages/Notices';
 import { useEmployeeStats } from '@/hooks/useEmployeeStats';
 import { Skeleton } from "../../shared/ui/skeleton";
-// TODO: Re-enable when EmployeeStatsChart component is available
-// import EmployeeStatsChart from '../components/EmployeeStatsChart';
 import ActivityAnalytics from '../components/ActivityAnalytics';
 
 const EmployeeDashboard = () => {
@@ -50,6 +51,7 @@ const EmployeeDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [userId] = useState('employee-123'); // In a real app, this would come from auth context
   const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile sidebar toggle
+  const [selectedChatEmployee, setSelectedChatEmployee] = useState<{id: string, name: string, callType?: 'voice' | 'video'} | null>(null);
 
   console.log('Rendering EmployeeDashboard', { activeTab, userId });
 
@@ -64,6 +66,12 @@ const EmployeeDashboard = () => {
     } else {
       setActiveTab(tab);
     }
+  };
+
+  // Handle opening chat with a specific employee
+  const handleOpenChat = (employeeId: string, employeeName: string, callType?: 'voice' | 'video') => {
+    setSelectedChatEmployee({ id: employeeId, name: employeeName, callType });
+    setActiveTab('messages');
   };
 
   // Log user login when component mounts
@@ -112,22 +120,14 @@ const EmployeeDashboard = () => {
 
   // Mock activity records data
   const activityRecords = [
-    { id: '1', date: '2025-09-01', type: 'email_sent' as const, count: 15, details: 'Weekly email summary' },
-    { id: '2', date: '2025-09-01', type: 'email_received' as const, count: 23, details: 'Daily email intake' },
     { id: '3', date: '2025-09-01', type: 'task_completed' as const, count: 42, details: 'Team communication' },
     { id: '4', date: '2025-09-01', type: 'task_completed' as const, count: 3, details: 'Project milestones' },
     { id: '5', date: '2025-09-02', type: 'meeting_attended' as const, count: 2, details: 'Team sync and client call' },
-    { id: '6', date: '2025-09-03', type: 'email_sent' as const, count: 18, details: 'Project updates' },
-    { id: '7', date: '2025-09-03', type: 'email_received' as const, count: 31, details: 'Client communications' },
     { id: '8', date: '2025-09-03', type: 'task_completed' as const, count: 28, details: 'Support requests' },
     { id: '9', date: '2025-09-04', type: 'task_completed' as const, count: 2, details: 'Bug fixes' },
     { id: '10', date: '2025-09-04', type: 'meeting_attended' as const, count: 1, details: 'Sprint planning' },
-    { id: '11', date: '2025-09-05', type: 'email_sent' as const, count: 12, details: 'Status reports' },
-    { id: '12', date: '2025-09-05', type: 'email_received' as const, count: 19, details: 'Internal communications' },
     { id: '13', date: '2025-09-05', type: 'task_completed' as const, count: 35, details: 'Team collaboration' },
     { id: '14', date: '2025-09-05', type: 'absent' as const, count: 1, details: 'Annual leave' },
-    { id: '15', date: '2025-09-06', type: 'email_sent' as const, count: 8, details: 'Weekend summary' },
-    { id: '16', date: '2025-09-06', type: 'email_received' as const, count: 14, details: 'Weekend messages' },
     { id: '17', date: '2025-09-06', type: 'task_completed' as const, count: 12, details: 'Weekend support' },
   ];
 
@@ -152,30 +152,20 @@ const EmployeeDashboard = () => {
 
   const renderDashboardContent = () => (
     <div className="space-y-6">
-      {/* Header with Gradient Background */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 via-blue-200 to-indigo-200 p-8 shadow-xl border border-blue-200">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl"></div>
-        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-pastel-blue-100 to-pastel-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 mb-6 shadow-sm border border-blue-200 dark:border-slate-600">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-blue-900 drop-shadow-sm">Welcome back!</h1>
-            <p className="text-sm text-blue-700 mt-2">Here's what's happening with your work today.</p>
+            <h1 className="text-3xl font-bold text-blue-900 dark:text-slate-100 mb-2">Welcome back!</h1>
+            <p className="text-blue-700 dark:text-slate-300">Here's what's happening with your work today.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleClockInOut}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all shadow-lg backdrop-blur-sm ${
-                kpiData.isClockedIn 
-                  ? 'bg-red-500 hover:bg-red-600 text-white ring-2 ring-red-300/50' 
-                  : 'bg-white hover:bg-gray-50 text-blue-700 ring-2 ring-blue-200/50'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <ClockIcon className="w-5 h-5" />
-                {kpiData.isClockedIn ? 'Clock Out' : 'Clock In'}
-              </div>
-            </button>
-          </div>
+          <Button
+            onClick={handleClockInOut}
+            className="bg-white dark:bg-slate-800 text-blue-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-200 dark:border-slate-600 rounded-xl px-6 py-6 shadow-sm font-medium transition-all flex items-center gap-2"
+          >
+            <Clock className="w-5 h-5" />
+            Clock In
+          </Button>
         </div>
       </div>
 
@@ -248,7 +238,7 @@ const EmployeeDashboard = () => {
             <h2 className="text-lg font-semibold text-gray-900">Quick Access</h2>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {/* My Work */}
             <Card
               className="border border-blue-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
@@ -282,6 +272,44 @@ const EmployeeDashboard = () => {
                   <div>
                     <h3 className="font-bold text-gray-900 group-hover:text-indigo-900 transition-colors">Safety</h3>
                     <p className="text-xs text-gray-600 group-hover:text-indigo-700 mt-1 transition-colors font-medium">Report concerns</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tasks */}
+            <Card
+              className="border border-green-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
+              onClick={() => navigate('/app/settings?tab=tasks')}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <CardContent className="p-6 relative">
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="p-4 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 border border-green-200">
+                    <CheckSquare className="w-7 h-7 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 group-hover:text-green-900 transition-colors">Tasks</h3>
+                    <p className="text-xs text-gray-600 group-hover:text-green-700 mt-1 transition-colors font-medium">Manage tasks</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Directory */}
+            <Card
+              className="border border-purple-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden relative rounded-xl"
+              onClick={() => navigate('/app/settings?tab=directory')}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-pink-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <CardContent className="p-6 relative">
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="p-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 border border-purple-200">
+                    <Users className="w-7 h-7 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 group-hover:text-purple-900 transition-colors">Directory</h3>
+                    <p className="text-xs text-gray-600 group-hover:text-purple-700 mt-1 transition-colors font-medium">Find colleagues</p>
                   </div>
                 </div>
               </CardContent>
@@ -332,6 +360,17 @@ const EmployeeDashboard = () => {
         <div className="flex-1 p-3 sm:p-4 md:p-6 overflow-auto max-w-full overflow-x-hidden">
           {activeTab === 'dashboard' && renderDashboardContent()}
           {activeTab === 'approvals' && <EmployeeApprovals />}
+          {activeTab === 'tasks' && <TaskManager />}
+          {activeTab === 'leave' && <LeaveManagement />}
+          {activeTab === 'messages' && (
+            <ChatInterface 
+              userId={userId} 
+              userName="Employee" 
+              selectedEmployee={selectedChatEmployee}
+            />
+          )}
+          {activeTab === 'notifications' && <NotificationsPage />}
+          {activeTab === 'directory' && <Directory onOpenChat={handleOpenChat} />}
           {activeTab === 'whistleblower' && <Whistleblower />}
           {activeTab === 'settings' && <SettingsComponent />}
         </div>

@@ -3,9 +3,7 @@ import {
   Users, 
   Search, 
   Filter, 
-  Plus, 
   Eye, 
-  Edit, 
   Mail, 
   Phone,
   MapPin,
@@ -30,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../shared/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/ui/tabs";
 
-const TeamManagement = () => {
+const TeamManagement = ({ onOpenChat }: { onOpenChat?: (employeeId: string, employeeName: string, callType?: 'voice' | 'video') => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -149,12 +147,10 @@ const TeamManagement = () => {
     console.log('View employee:', employeeId);
   };
 
-  const handleEditEmployee = (employeeId: string) => {
-    console.log('Edit employee:', employeeId);
-  };
-
-  const handleContactEmployee = (email: string) => {
-    window.location.href = `mailto:${email}`;
+  const handleContactEmployee = (employeeId: string, employeeName: string, callType?: 'voice' | 'video') => {
+    if (onOpenChat) {
+      onOpenChat(employeeId, employeeName, callType);
+    }
   };
 
   return (
@@ -164,16 +160,12 @@ const TeamManagement = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Team Management</h1>
-            <p className="text-gray-600">Manage your team members, performance, and development</p>
+            <p className="text-gray-600">View your team members and their performance</p>
           </div>
-          <div className="flex gap-2">
+          <div>
             <Button size="sm" variant="outline">
               <Download className="w-4 h-4 mr-2" />
               Export Team Report
-            </Button>
-            <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Team Member
             </Button>
           </div>
         </div>
@@ -351,20 +343,15 @@ const TeamManagement = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleViewEmployee(member.id)}
+                                title="View Details"
                               >
                                 <Eye className="w-3 h-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleEditEmployee(member.id)}
-                              >
-                                <Edit className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleContactEmployee(member.email)}
+                                onClick={() => handleContactEmployee(member.id, member.name)}
+                                title="Send Message"
                               >
                                 <Mail className="w-3 h-3" />
                               </Button>

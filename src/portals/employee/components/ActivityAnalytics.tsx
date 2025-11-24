@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
-import { Mail, CheckCircle, Calendar, TrendingUp } from 'lucide-react';
+import { CheckCircle, Calendar, TrendingUp } from 'lucide-react';
 
 interface ActivityRecord {
   id: string;
   date: string;
-  type: 'email_sent' | 'email_received' | 'chat_message' | 'task_completed' | 'meeting_attended' | 'absent' | 'late';
+  type: 'chat_message' | 'task_completed' | 'meeting_attended' | 'absent' | 'late';
   count: number;
   details?: string;
 }
@@ -16,14 +16,6 @@ interface ActivityAnalyticsProps {
 
 const ActivityAnalytics: React.FC<ActivityAnalyticsProps> = ({ activityRecords }) => {
   // Calculate summary statistics
-  const emailSent = activityRecords
-    .filter(record => record.type === 'email_sent')
-    .reduce((sum, record) => sum + record.count, 0);
-    
-  const emailReceived = activityRecords
-    .filter(record => record.type === 'email_received')
-    .reduce((sum, record) => sum + record.count, 0);
-    
   const tasksCompleted = activityRecords
     .filter(record => record.type === 'task_completed')
     .reduce((sum, record) => sum + record.count, 0);
@@ -49,28 +41,7 @@ const ActivityAnalytics: React.FC<ActivityAnalyticsProps> = ({ activityRecords }
       </CardHeader>
       <CardContent className="space-y-6 relative">
         {/* Key Metrics in Horizontal Grid - Enhanced */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Email Activity - Vibrant Blue */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 rounded-xl p-5 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full blur-xl"></div>
-            <div className="flex items-center gap-3 mb-4 relative">
-              <div className="p-2 bg-white/25 backdrop-blur-sm rounded-lg">
-                <Mail className="w-5 h-5 text-white" />
-              </div>
-              <h3 className="text-sm font-bold text-white">Emails</h3>
-            </div>
-            <div className="space-y-3 relative">
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs text-blue-100 font-medium">Sent</span>
-                <span className="text-2xl font-bold text-white drop-shadow-lg">{emailSent}</span>
-              </div>
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs text-blue-100 font-medium">Received</span>
-                <span className="text-2xl font-bold text-white drop-shadow-lg">{emailReceived}</span>
-              </div>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Task Completion - Vibrant Green */}
           <div className="relative overflow-hidden bg-gradient-to-br from-green-500 via-emerald-600 to-teal-600 rounded-xl p-5 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/20 rounded-full blur-xl"></div>

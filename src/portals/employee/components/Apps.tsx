@@ -1,28 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
 import { Button } from "../../shared/ui/button";
 import { Badge } from "../../shared/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import appSessionService from '@/services/appSessionService';
-// TODO: Re-enable when AppInterfaces components are available
-// import GmailInterface from './AppInterfaces/GmailInterface';
-// import TrelloInterface from './AppInterfaces/TrelloInterface';
 import {
   Mail,
   Calendar,
   MessageCircle,
   Plug,
   CheckCircle,
-  Video,
-  ExternalLink
+  Video
 } from 'lucide-react';
 import { useConnectedIntegrations } from '@/hooks/useIntegrations';
 
 const Apps = () => {
   const { data: integrations = [], isLoading, error } = useConnectedIntegrations();
   const { toast } = useToast();
-  const [launchingApp, setLaunchingApp] = useState<string | null>(null);
-  const [currentAppInterface, setCurrentAppInterface] = useState<string | null>(null);
 
   // Map integration icon names to actual components
   const getIntegrationIcon = (iconName: string) => {
@@ -35,51 +28,6 @@ const Apps = () => {
     }
   };
 
-  // Handle app launch - navigate to app interface
-  const handleLaunchApp = (appName: string, appId: string) => {
-    setLaunchingApp(appId);
-
-    // Simulate loading and then navigate to app interface
-    setTimeout(() => {
-      setLaunchingApp(null);
-      setCurrentAppInterface(appId);
-      toast({
-        title: "App Loading",
-        description: `Opening ${appName} login interface...`,
-      });
-    }, 1000);
-  };
-
-  // Handle successful app login
-  const handleAppLogin = (appId: string, appName: string) => {
-    const iconMap: Record<string, string> = {
-      gmail: 'mail',
-      trello: 'calendar',
-      whatsapp: 'message-circle',
-      slack: 'message-circle',
-      zoom: 'video'
-    };
-
-    // Save logged-in app to session
-    appSessionService.addLoggedInApp(appId, appName, iconMap[appId] || 'plug');
-
-    // Trigger storage event for sidebar updates
-    window.dispatchEvent(new Event('app-session-changed'));
-
-    // Navigate back to apps list
-    setCurrentAppInterface(null);
-
-    toast({
-      title: "App Connected",
-      description: `${appName} is now available in your sidebar quick access!`,
-    });
-  };
-
-  // Handle back navigation from app interface
-  const handleBackToApps = () => {
-    setCurrentAppInterface(null);
-  };
-
   // Handle integration request
   const handleRequestIntegration = () => {
     toast({
@@ -87,64 +35,6 @@ const Apps = () => {
       description: "Your integration request has been sent to the administrator.",
     });
   };
-
-  // Render app-specific interface
-  if (currentAppInterface) {
-    // TODO: Re-enable when AppInterfaces components are available
-    // switch (currentAppInterface) {
-    //   case 'gmail': {
-    //     return (
-    //       <GmailInterface
-    //         onBack={handleBackToApps}
-    //         onLogin={handleAppLogin}
-    //       />
-    //     );
-    //   }
-    //   case 'trello': {
-    //     return (
-    //       <TrelloInterface
-    //         onBack={handleBackToApps}
-    //         onLogin={handleAppLogin}
-    //       />
-    //     );
-    //   }
-    //   case 'whatsapp':
-    //   case 'slack':
-    //   case 'zoom': {
-        // For other apps, show a generic interface
-        const app = integrations.find(app => app.id === currentAppInterface);
-        const IconComponent = getIntegrationIcon(app?.icon || 'plug');
-        return (
-          <div className="flex-1 p-4 md:p-6 bg-gray-50 min-h-screen">
-            <div className="max-w-2xl mx-auto text-center py-12">
-              <Button variant="outline" className="mb-6" onClick={handleBackToApps}>
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Back to Apps
-              </Button>
-              <div className="mb-6">
-                <div className="p-4 bg-blue-100 rounded-xl inline-block mb-4">
-                  <IconComponent className="w-12 h-12 text-blue-600" />
-                </div>
-                <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                  {app?.name} Integration
-                </h1>
-                <p className="text-gray-600 mb-6">
-                  This app integration is coming soon! Click the button below to simulate login.
-                </p>
-              </div>
-              <Button onClick={() => {
-                if (app) handleAppLogin(currentAppInterface, app.name);
-              }}>
-                Simulate Login to {app?.name}
-              </Button>
-            </div>
-          </div>
-        );
-    //   }
-    //   default:
-    //     return null;
-    // }
-  }
 
   if (isLoading) {
     // ... existing loading code ...
@@ -274,7 +164,6 @@ const Apps = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {integrations.map((integration) => {
                 const IconComponent = getIntegrationIcon(integration.icon);
-                const isLaunching = launchingApp === integration.id;
 
                 return (
                   <Card key={integration.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-green-500 h-full flex flex-col">
@@ -309,21 +198,17 @@ const Apps = () => {
                           <Button
                             size="sm"
                             className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm px-3 sm:px-4 flex items-center gap-1 w-full sm:w-auto justify-center"
-                            onClick={() => handleLaunchApp(integration.name, integration.id)}
-                            disabled={isLaunching}
+                            onClick={() => {
+                              // Open floating chat
+                              window.dispatchEvent(new Event('openFloatingChat'));
+                              toast({
+                                title: "Opening Chat",
+                                description: `${integration.name} is now available in the chat window.`,
+                              });
+                            }}
                           >
-                            {isLaunching ? (
-                              <>
-                                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                <span className="hidden sm:inline">Launching...</span>
-                                <span className="sm:hidden">...</span>
-                              </>
-                            ) : (
-                              <>
-                                <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span>Launch App</span>
-                              </>
-                            )}
+                            <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span>Open Chat</span>
                           </Button>
                         </div>
                       </div>

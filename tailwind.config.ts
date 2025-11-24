@@ -62,6 +62,32 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Pastel Blue Palette
+				pastel: {
+					blue: {
+						50: '#eff6ff',
+						100: '#dbeafe',
+						200: '#bfdbfe',
+						300: '#93c5fd',
+						400: '#60a5fa',
+						500: '#3b82f6',
+						600: '#2563eb',
+						700: '#1d4ed8',
+						800: '#1e40af',
+						900: '#1e3a8a',
+						950: '#172554',
+					}
+				},
+				brand: {
+					blue: {
+						DEFAULT: '#3b82f6',
+						light: '#60a5fa',
+						lighter: '#93c5fd',
+						lightest: '#dbeafe',
+						dark: '#2563eb',
+						darker: '#1d4ed8',
+					}
 				}
 			},
 			borderRadius: {

@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { cn } from "@/lib/utils";
-import { useNavigate, useLocation } from 'react-router-dom';
-import appSessionService from '@/services/appSessionService';
 import { 
   Home,
   Users, 
   Settings as SettingsIcon,
   Shield,
-  Inbox
+  Inbox,
+  CheckSquare,
+  CalendarDays,
+  Bell
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "../../shared/ui/avatar";
 import ThemeToggle from '../../shared/components/misc/ThemeToggle';
@@ -19,55 +20,13 @@ interface ManagerSidebarProps {
 }
 
 const ManagerSidebar = ({ className, activeTab, setActiveTab }: ManagerSidebarProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [loggedInApps, setLoggedInApps] = useState<any[]>([]);
-
-  // Load logged-in apps
-  useEffect(() => {
-    const loadLoggedInApps = () => {
-      const apps = appSessionService.getLoggedInApps();
-      setLoggedInApps(apps);
-    };
-    
-    loadLoggedInApps();
-    
-    // Listen for storage changes (app login/logout)
-    const handleStorageChange = () => {
-      loadLoggedInApps();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('app-session-changed', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('app-session-changed', handleStorageChange);
-    };
-  }, []);
-
-  // Map app icons
-  const getAppIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'mail': return Mail;
-      case 'calendar': return Calendar;
-      case 'message-circle': return MessageSquare;
-      case 'video': return Grid;
-      default: return Grid;
-    }
-  };
-
-  // Handle app logout
-  const handleAppLogout = (appId: string) => {
-    appSessionService.removeLoggedInApp(appId);
-    setLoggedInApps(appSessionService.getLoggedInApps());
-    // Trigger storage event for other components
-    window.dispatchEvent(new Event('app-session-changed'));
-  };
-
   const menuItems = [
     { icon: Home, label: "Dashboard", id: "dashboard", active: activeTab === "dashboard" },
     { icon: Inbox, label: "My Work", id: "approvals", active: activeTab === "approvals" },
+    { icon: CheckSquare, label: "Tasks", id: "tasks", active: activeTab === "tasks" },
+    { icon: CalendarDays, label: "Leave", id: "leave", active: activeTab === "leave" },
+    { icon: Bell, label: "Notifications", id: "notifications", active: activeTab === "notifications" },
+    { icon: Users, label: "Directory", id: "directory", active: activeTab === "directory" },
     { icon: Users, label: "Team", id: "team", active: activeTab === "team" },
     { icon: Shield, label: "Whistleblower", id: "whistleblower", active: activeTab === "whistleblower" }
   ];
@@ -90,7 +49,7 @@ const ManagerSidebar = ({ className, activeTab, setActiveTab }: ManagerSidebarPr
           </div>
           <div>
             <h2 className="text-base font-semibold text-gray-900 dark:text-slate-50">Probus</h2>
-            <p className="text-xs text-gray-500 dark:text-slate-400">Manager Portal</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Leadership Portal</p>
           </div>
         </div>
       </div>

@@ -10,15 +10,15 @@ import {
   ArrowLeft,
   Search
 } from 'lucide-react';
-import { Button } from "../../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
+import { Button } from "../../../shared/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../../../shared/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator
-} from "../../ui/dropdown-menu";
+} from "../../../shared/ui/dropdown-menu";
 import { ActiveChat } from '@/types/chat';
 
 interface ChatHeaderProps {

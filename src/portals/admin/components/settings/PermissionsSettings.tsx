@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, Settings, Copy, Download, Upload, FileText, Search, Filter } from 'lucide-react';
-import { Separator } from "../../shared/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/ui/tabs";
-import { Button } from "../../shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
-import { Switch } from "../../shared/ui/switch";
+import { Separator } from "../../../shared/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../shared/ui/tabs";
+import { Button } from "../../../shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/ui/card";
+import { Switch } from "../../../shared/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import RoleSelector from './permissions/RoleSelector';
 import PermissionCard from './permissions/PermissionCard';
@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription
-} from "../../shared/ui/dialog";
+} from "../../../shared/ui/dialog";
 
 type Permission = Tables<'permissions'>;
 type RolePermission = Tables<'role_permissions'>;

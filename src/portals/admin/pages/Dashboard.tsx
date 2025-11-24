@@ -16,16 +16,17 @@ import {
   MessageCircle,
   Brain,
   Command,
-  Inbox,
-  Shield
+  Shield,
+  ClipboardCheck,
+  Clock
 } from 'lucide-react';
 import { Button } from "../../shared/ui/button";
+import ActivityFeed from '../../shared/components/ActivityFeed';
 
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [showSetupBanner, setShowSetupBanner] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in as admin
@@ -33,54 +34,23 @@ const Index = () => {
     // Actually, ProtectedRoute handles this, so we might not need this check here if we trust it.
     // But keeping it doesn't hurt.
     const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
-    
-    // Check if setup is complete
-    const setupComplete = localStorage.getItem('setupComplete') === 'true';
-    if (!setupComplete) {
-      setShowSetupBanner(true);
-    }
-
-    // if (!isAdminLoggedIn) {
-    //   navigate('/login');
-    // }
   }, [navigate]);
 
   const renderDashboardContent = () => (
     <div className="mb-6">
-      {/* Setup Banner */}
-      {showSetupBanner && (
-        <div className="bg-blue-600 text-white rounded-xl p-6 mb-6 shadow-sm border border-blue-700">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-white bg-opacity-10 rounded-lg">
-                <Brain className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Welcome to Probus MVP! 🚀</h3>
-                <p className="text-blue-100 mb-3">AI-powered HR management focused on safety, productivity, and communication</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowSetupBanner(false)}
-              className="text-white hover:text-blue-100 transition-colors"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-semibold text-blue-900 dark:text-slate-100">Admin Dashboard</h1>
-          <p className="text-sm text-blue-700 dark:text-slate-400 mt-1">Manage your organization</p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-slate-300 bg-blue-50 dark:bg-slate-800 px-4 py-2.5 rounded-xl border border-blue-200 dark:border-slate-700">
-          <Command className="w-4 h-4" />
-          <span className="hidden sm:inline">Press</span>
-          <kbd className="px-2 py-1 bg-white dark:bg-slate-700 border border-blue-300 dark:border-slate-600 rounded-md text-xs font-semibold shadow-sm text-blue-700 dark:text-slate-200">Ctrl+K</kbd>
-          <span className="hidden sm:inline">for quick actions</span>
+      <div className="bg-gradient-to-r from-pastel-blue-100 to-pastel-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 mb-8 shadow-sm border border-blue-200 dark:border-slate-600">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-blue-900 dark:text-slate-100 mb-2">Welcome back!</h1>
+            <p className="text-blue-700 dark:text-slate-300">Here's what's happening with your organization today.</p>
+          </div>
+          <Button
+            className="bg-white dark:bg-slate-800 text-blue-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-200 dark:border-slate-600 rounded-xl px-6 py-6 shadow-sm font-medium transition-all flex items-center gap-2"
+          >
+            <Clock className="w-5 h-5" />
+            Clock In
+          </Button>
         </div>
       </div>
 
@@ -141,30 +111,30 @@ const Index = () => {
       {/* Management Overview - MVP */}
       <div className="mb-8">
         <h2 className="text-lg sm:text-xl font-semibold text-blue-900 dark:text-slate-100 mb-4 sm:mb-6">Core Features</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           <Card
-            className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group bg-gradient-to-br from-blue-50 to-sky-50"
-            onClick={() => navigate('/work')}
+            className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer rounded-xl group bg-gradient-to-br from-pastel-blue-100 to-pastel-blue-50"
+            onClick={() => navigate('/admin/approvals')}
           >
             <CardHeader className="pb-4">
               <CardTitle className="text-base font-semibold text-blue-900 flex items-center gap-3">
-                <div className="p-2.5 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition-colors border border-blue-200">
-                  <Inbox className="w-5 h-5 text-blue-600" />
+                <div className="p-2.5 bg-pastel-blue-200 rounded-xl group-hover:bg-pastel-blue-300 transition-colors border border-blue-200">
+                  <ClipboardCheck className="w-5 h-5 text-blue-600" />
                 </div>
-                My Work
+                Approvals
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-sm text-blue-700 mb-4 leading-relaxed">All pending tasks, approvals, and notifications</p>
+              <p className="text-sm text-blue-700 mb-4 leading-relaxed">Review system-level approval requests</p>
               <div className="flex items-center justify-between text-xs text-blue-600 mb-3">
-                <span>Pending Items</span>
-                <span className="font-semibold text-blue-700">8</span>
+                <span>Pending Requests</span>
+                <span className="font-semibold text-blue-700">3</span>
               </div>
               <Button
-                onClick={(e) => { e.stopPropagation(); navigate('/work'); }}
+                onClick={(e) => { e.stopPropagation(); navigate('/admin/approvals'); }}
                 className="bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-sm font-medium shadow-sm w-full h-10"
               >
-                View All
+                Review
               </Button>
             </CardContent>
           </Card>
@@ -275,6 +245,12 @@ const Index = () => {
             </Button>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Activity Feed - NEW */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-blue-900 dark:text-slate-100 mb-4">Recent Activity</h2>
+        <ActivityFeed maxItems={8} showTitle={false} />
       </div>
     </div>
   );

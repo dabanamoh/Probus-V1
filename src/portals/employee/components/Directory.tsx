@@ -24,7 +24,11 @@ interface Employee {
   avatar?: string;
 }
 
-const Directory = () => {
+interface DirectoryProps {
+  onOpenChat?: (employeeId: string, employeeName: string, callType?: 'voice' | 'video') => void;
+}
+
+const Directory: React.FC<DirectoryProps> = ({ onOpenChat }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   
@@ -111,6 +115,17 @@ const Directory = () => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`;
   };
 
+  const handleOpenChat = (employee: Employee, callType?: 'voice' | 'video') => {
+    // Dispatch event to open floating chat with selected employee
+    window.dispatchEvent(new CustomEvent('openFloatingChat', {
+      detail: {
+        employeeId: employee.id,
+        employeeName: `${employee.firstName} ${employee.lastName}`,
+        callType: callType
+      }
+    }));
+  };
+
   return (
     <div className="p-4 md:p-6">
       <div className="mb-4 md:mb-6">
@@ -188,11 +203,21 @@ const Directory = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0 mt-4">
-                <Button variant="outline" size="sm" className="flex-1 text-xs">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 text-xs"
+                  onClick={() => handleOpenChat(employee)}
+                >
                   <Mail className="w-3 h-3 mr-1" />
                   Message
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1 text-xs">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 text-xs"
+                  onClick={() => handleOpenChat(employee, 'voice')}
+                >
                   <Phone className="w-3 h-3 mr-1" />
                   Call
                 </Button>

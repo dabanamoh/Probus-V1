@@ -13,8 +13,7 @@ import {
   Briefcase, 
   Shield,
   LogOut,
-  Key,
-  Bell
+  Key
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "../../shared/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -136,7 +135,6 @@ const Settings = () => {
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Key },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'signout', label: 'Sign Out', icon: LogOut }
   ];
 
@@ -396,7 +394,7 @@ const Settings = () => {
             </Card>
           )}
 
-          {/* Notifications Tab */}
+          {/* Notifications Tab - Settings Only */}
           {activeTab === 'notifications' && (
             <Card>
               <CardHeader>

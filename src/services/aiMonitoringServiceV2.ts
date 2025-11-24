@@ -277,7 +277,6 @@ class AIMonitoringServiceV2 {
 
   private inferModule(pathname: string): string {
     const moduleMap: Record<string, string> = {
-      '/work': 'MyWork',
       '/employees': 'EmployeeManagement',
       '/departments': 'Departments',
       '/notices': 'Communications',

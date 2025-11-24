@@ -23,7 +23,7 @@ const Login = () => {
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({
-    email: '',
+    emailOrUsername: '',
     password: ''
   });
   const [forgotPasswordData, setForgotPasswordData] = useState({
@@ -43,7 +43,7 @@ const Login = () => {
     const hrEmail = 'hr@probusemployee.com';
     const hrPassword = 'HRPass123!';
 
-    if (!loginData.email || !loginData.password) {
+    if (!loginData.emailOrUsername || !loginData.password) {
       toast({
         title: "Login Failed",
         description: "Please fill in all fields",
@@ -52,35 +52,93 @@ const Login = () => {
       return;
     }
 
-    // Check credentials
-    if (loginData.email === adminEmail && loginData.password === adminPassword) {
-      login(loginData.email, 'admin');
+    // Check if user credentials exist in localStorage
+    const storedCredentials = JSON.parse(localStorage.getItem('user_credentials') || '[]');
+    const userCredential = storedCredentials.find((cred: any) => 
+      (cred.email === loginData.emailOrUsername || cred.username === loginData.emailOrUsername) && 
+      cred.password === loginData.password
+    );
+
+    if (userCredential) {
+      // Login with stored credentials
+      login(userCredential.email, userCredential.role);
+      toast({
+        title: "Login Successful",
+        description: `Welcome ${userCredential.firstName}!`,
+      });
+      
+      const profileCompleted = localStorage.getItem('profileCompleted');
+      if (!profileCompleted) {
+        navigate('/first-login');
+      } else {
+        // Navigate based on role
+        if (userCredential.role === 'admin') {
+          navigate('/');
+        } else if (userCredential.role === 'hr') {
+          navigate('/hr');
+        } else if (userCredential.role === 'manager') {
+          navigate('/manager');
+        } else {
+          navigate('/app');
+        }
+      }
+      return;
+    }
+
+    // Check demo credentials
+    if (loginData.emailOrUsername === adminEmail && loginData.password === adminPassword) {
+      login(loginData.emailOrUsername, 'admin');
       toast({
         title: "Login Successful",
         description: "Welcome Admin!",
       });
-      navigate('/');
-    } else if (loginData.email === employeeEmail && loginData.password === employeePassword) {
-      login(loginData.email, 'employee');
+      
+      // Check if profile is completed
+      const profileCompleted = localStorage.getItem('profileCompleted');
+      if (!profileCompleted) {
+        navigate('/first-login');
+      } else {
+        navigate('/');
+      }
+    } else if (loginData.emailOrUsername === employeeEmail && loginData.password === employeePassword) {
+      login(loginData.emailOrUsername, 'employee');
       toast({
         title: "Login Successful",
         description: "Welcome Employee!",
       });
-      navigate('/app');
-    } else if (loginData.email === managerEmail && loginData.password === managerPassword) {
-      login(loginData.email, 'manager');
+      
+      const profileCompleted = localStorage.getItem('profileCompleted');
+      if (!profileCompleted) {
+        navigate('/first-login');
+      } else {
+        navigate('/app');
+      }
+    } else if (loginData.emailOrUsername === managerEmail && loginData.password === managerPassword) {
+      login(loginData.emailOrUsername, 'manager');
       toast({
         title: "Login Successful",
         description: "Welcome Manager!",
       });
-      navigate('/manager');
-    } else if (loginData.email === hrEmail && loginData.password === hrPassword) {
-      login(loginData.email, 'hr');
+      
+      const profileCompleted = localStorage.getItem('profileCompleted');
+      if (!profileCompleted) {
+        navigate('/first-login');
+      } else {
+        navigate('/manager');
+      }
+    } else if (loginData.emailOrUsername === hrEmail && loginData.password === hrPassword) {
+      login(loginData.emailOrUsername, 'hr');
       toast({
         title: "Login Successful",
         description: "Welcome HR!",
       });
-      navigate('/hr');
+      
+      const profileCompleted = localStorage.getItem('profileCompleted');
+      if (!profileCompleted) {
+        navigate('/first-login');
+      } else {
+        navigate('/hr');
+      }
     } else {
       toast({
         title: "Login Failed",
@@ -111,24 +169,24 @@ const Login = () => {
     }
   };
 
-  const handleDemoLogin = (email: string, password: string) => {
-    setLoginData({ email, password });
+  const handleDemoLogin = (emailOrUsername: string, password: string) => {
+    setLoginData({ emailOrUsername, password });
     // Directly call the login function instead of simulating form submission
     setTimeout(() => {
-      if (email === 'admin@probusemployee.com') {
-        login(email, 'admin');
+      if (emailOrUsername === 'admin@probusemployee.com') {
+        login(emailOrUsername, 'admin');
         toast({ title: "Login Successful", description: "Welcome Admin!" });
         navigate('/');
-      } else if (email === 'employee@probusemployee.com') {
-        login(email, 'employee');
+      } else if (emailOrUsername === 'employee@probusemployee.com') {
+        login(emailOrUsername, 'employee');
         toast({ title: "Login Successful", description: "Welcome Employee!" });
         navigate('/app');
-      } else if (email === 'manager@probusemployee.com') {
-        login(email, 'manager');
+      } else if (emailOrUsername === 'manager@probusemployee.com') {
+        login(emailOrUsername, 'manager');
         toast({ title: "Login Successful", description: "Welcome Manager!" });
         navigate('/manager');
-      } else if (email === 'hr@probusemployee.com') {
-        login(email, 'hr');
+      } else if (emailOrUsername === 'hr@probusemployee.com') {
+        login(emailOrUsername, 'hr');
         toast({ title: "Login Successful", description: "Welcome HR!" });
         navigate('/hr');
       }
@@ -253,16 +311,16 @@ const Login = () => {
                   <form onSubmit={handleLogin}>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="emailOrUsername">Email or Username</Label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                           <Input
-                            id="email"
-                            type="email"
-                            placeholder="your.email@company.com"
+                            id="emailOrUsername"
+                            type="text"
+                            placeholder="your.email@company.com or username"
                             className="pl-10"
-                            value={loginData.email}
-                            onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                            value={loginData.emailOrUsername}
+                            onChange={(e) => setLoginData({ ...loginData, emailOrUsername: e.target.value })}
                             required
                           />
                         </div>

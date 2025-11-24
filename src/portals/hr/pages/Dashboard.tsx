@@ -5,7 +5,6 @@ import {
   FileText, 
   ClipboardCheck, 
   BarChart3, 
-  Mail, 
   Calendar, 
   Shield, 
   UserPlus,
@@ -20,7 +19,8 @@ import {
   Eye,
   X,
   Menu,
-  BookOpen
+  BookOpen,
+  MessageCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
 import { Button } from "../../shared/ui/button";
@@ -38,21 +38,20 @@ import HRReports from '../components/HRReports';
 import HRSettings from '../components/HRSettings';
 
 // Import Employee components for full functionality
-import EmailClient from '../../employee/components/EmailClient';
 import TaskManager from '../../employee/components/TaskManager';
 import TimeTracking from '../../employee/components/TimeTracking';
 import Directory from '../../employee/components/Directory';
+import LeaveManagement from '../../employee/components/LeaveManagement';
 import RulesAndEthics from '../../employee/components/RulesAndEthics';
 import Whistleblower from '../../employee/components/Whistleblower';
 import Apps from '../../employee/components/Apps';
 import SettingsComponent from '../../employee/components/Settings';
+import NotificationCenter from '../../shared/components/NotificationCenter';
+import NotificationsPage from '../../employee/components/NotificationsPage';
+import ChatInterface from '../../shared/components/chat/ChatInterface';
 import Events from '../../admin/pages/Events';
 import { useEmployeeStats } from '@/hooks/useEmployeeStats';
-// TODO: Re-enable when EmployeeStatsChart component is available
-// import EmployeeStatsChart from '@/employee-app/components/EmployeeStatsChart';
 import ActivityAnalytics from '../../employee/components/ActivityAnalytics';
-// TODO: Re-enable when auditService is available
-// import { captureAndLogLocation, logUserActivity } from '@/employee-app/services/auditService';
 
 // Mock hooks for HR statistics
 const useHRStats = (userId: string) => {
@@ -89,8 +88,9 @@ const HRDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [userId] = useState('hr-001'); // In a real app, this would come from auth context
   const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile sidebar toggle
+  const [selectedChatEmployee, setSelectedChatEmployee] = useState<{id: string, name: string, callType?: 'voice' | 'video'} | null>(null);
 
-  // Handle tab changes - navigate to /work for My Work
+  // Handle tab changes - stay within HR portal
   const handleTabChange = (tab: string) => {
  if (tab === 'mywork') {
       // HR users should stay within their portal for task management
@@ -98,6 +98,12 @@ const HRDashboard = () => {
     } else {
       setActiveTab(tab);
     }
+  };
+
+  // Handle opening chat with a specific employee
+  const handleOpenChat = (employeeId: string, employeeName: string, callType?: 'voice' | 'video') => {
+    setSelectedChatEmployee({ id: employeeId, name: employeeName, callType });
+    setActiveTab('messages');
   };
 
   // Fetch HR statistics and employee stats for comprehensive view
@@ -167,22 +173,14 @@ const HRDashboard = () => {
 
   // Mock activity records data for HR activities
   const activityRecords = [
-    { id: '1', date: '2025-09-01', type: 'email_sent' as const, count: 25, details: 'HR policy updates and communications' },
-    { id: '2', date: '2025-09-01', type: 'email_received' as const, count: 45, details: 'Employee queries and applications' },
     { id: '3', date: '2025-09-01', type: 'task_completed' as const, count: 15, details: 'Employee onboarding tasks' },
     { id: '4', date: '2025-09-01', type: 'task_completed' as const, count: 8, details: 'HR compliance reviews' },
     { id: '5', date: '2025-09-02', type: 'meeting_attended' as const, count: 4, details: 'Management and recruitment meetings' },
-    { id: '6', date: '2025-09-03', type: 'email_sent' as const, count: 30, details: 'Department coordination emails' },
-    { id: '7', date: '2025-09-03', type: 'email_received' as const, count: 52, details: 'Employee feedback and requests' },
     { id: '8', date: '2025-09-03', type: 'task_completed' as const, count: 12, details: 'HR administrative tasks' },
     { id: '9', date: '2025-09-04', type: 'task_completed' as const, count: 6, details: 'Policy documentation updates' },
     { id: '10', date: '2025-09-04', type: 'meeting_attended' as const, count: 3, details: 'HR strategy planning' },
-    { id: '11', date: '2025-09-05', type: 'email_sent' as const, count: 18, details: 'Weekly HR reports' },
-    { id: '12', date: '2025-09-05', type: 'email_received' as const, count: 35, details: 'Executive communications' },
     { id: '13', date: '2025-09-05', type: 'task_completed' as const, count: 20, details: 'Employee data management' },
     { id: '14', date: '2025-09-05', type: 'absent' as const, count: 0, details: 'HR team attendance' },
-    { id: '15', date: '2025-09-06', type: 'email_sent' as const, count: 12, details: 'Weekend urgent communications' },
-    { id: '16', date: '2025-09-06', type: 'email_received' as const, count: 22, details: 'Emergency HR requests' },
     { id: '17', date: '2025-09-06', type: 'task_completed' as const, count: 8, details: 'Critical HR support' },
   ];
 
@@ -203,10 +201,19 @@ const HRDashboard = () => {
   const renderDashboardContent = () => (
     <div className="mb-6 max-w-full overflow-x-hidden">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-blue-900">HR Dashboard</h1>
-          <p className="text-sm text-blue-700 mt-1">Human Resources Portal</p>
+      <div className="bg-gradient-to-r from-pastel-blue-100 to-pastel-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 mb-8 shadow-sm border border-blue-200 dark:border-slate-600">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-blue-900 dark:text-slate-100 mb-2">Welcome back!</h1>
+            <p className="text-blue-700 dark:text-slate-300">Here's what's happening with HR today.</p>
+          </div>
+          <Button
+            onClick={handleClockInOut}
+            className="bg-white dark:bg-slate-800 text-blue-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-200 dark:border-slate-600 rounded-xl px-6 py-6 shadow-sm font-medium transition-all flex items-center gap-2"
+          >
+            <Clock className="w-5 h-5" />
+            Clock In
+          </Button>
         </div>
       </div>
       
@@ -453,8 +460,19 @@ const HRDashboard = () => {
       <div className="flex-1 flex flex-col h-screen overflow-hidden md:ml-64 max-w-full overflow-x-hidden">
         <div className="flex-1 p-3 sm:p-4 md:p-6 overflow-auto max-w-full overflow-x-hidden">
           {activeTab === 'dashboard' && renderDashboardContent()}
-          {activeTab === 'employees' && <EmployeeManagement />}
+          {activeTab === 'employees' && <EmployeeManagement onOpenChat={handleOpenChat} />}
           {activeTab === 'approvals' && <HRApprovals />}
+          {activeTab === 'tasks' && <TaskManager />}
+          {activeTab === 'leave' && <LeaveManagement />}
+          {activeTab === 'messages' && (
+            <ChatInterface 
+              userId={userId} 
+              userName="HR Manager" 
+              selectedEmployee={selectedChatEmployee}
+            />
+          )}
+          {activeTab === 'notifications' && <NotificationsPage />}
+          {activeTab === 'directory' && <Directory onOpenChat={handleOpenChat} />}
           {activeTab === 'whistleblower' && <Whistleblower />}
           {activeTab === 'settings' && <SettingsComponent />}
         </div>

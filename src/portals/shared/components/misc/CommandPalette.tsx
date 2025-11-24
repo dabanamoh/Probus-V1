@@ -58,7 +58,6 @@ const CommandPalette = () => {
   // All available commands
   const allCommands: CommandItem[] = [
     // Universal Navigation
-    { id: 'my-work', label: 'My Work', icon: Inbox, action: () => navigate('/work'), category: 'navigation', keywords: ['inbox', 'tasks', 'pending', 'approvals'] },
     { id: 'safety-ai', label: 'Safety & AI Monitoring', icon: Shield, action: () => navigate('/safety'), category: 'navigation', roles: ['admin', 'hr'], keywords: ['security', 'harassment', 'productivity', 'threats'] },
     { id: 'settings', label: 'Settings', icon: Settings, action: () => navigate('/settings'), category: 'navigation', keywords: ['email', 'profile', 'preferences'] },
     
@@ -85,7 +84,7 @@ const CommandPalette = () => {
     { id: 'quick-setup', label: 'Quick Setup Wizard', icon: Plus, action: () => navigate('/setup'), category: 'action', roles: ['admin'], keywords: ['onboard', 'configure', 'start'] },
     
     // Quick Actions - Manager
-    { id: 'approve-requests', label: 'Review Requests', icon: CheckCircle, action: () => navigate('/work'), category: 'action', roles: ['manager'], keywords: ['review', 'pending', 'approve', 'approvals'] },
+    { id: 'approve-requests', label: 'Review Requests', icon: CheckCircle, action: () => navigate('/manager'), category: 'action', roles: ['manager'], keywords: ['review', 'pending', 'approve', 'approvals'] },
     { id: 'post-team-notice', label: 'Team Communication', icon: Bell, action: () => navigate('/manager'), category: 'action', roles: ['manager'], keywords: ['announce', 'team'] },
     
     // Quick Actions - Employee

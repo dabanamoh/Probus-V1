@@ -7,9 +7,9 @@ import {
   Settings,
   Bell,
   LogOut,
-  Inbox,
   Shield,
-  Brain
+  UserPlus,
+  ClipboardCheck
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "../../shared/ui/avatar";
 import { useAuth } from '@/context/AuthContext';
@@ -30,9 +30,11 @@ const Sidebar = ({ className }: SidebarProps) => {
   const { logout, user } = useAuth();
 
   const menuItems = [
-    { icon: Inbox, label: "My Work", path: "/work" },
+    { icon: ClipboardCheck, label: "Approvals", path: "/admin/approvals" },
+    { icon: Bell, label: "Notifications", path: "/notifications" },
     { icon: Shield, label: "Safety & AI", path: "/safety" },
     { icon: Users, label: "Employees", path: "/employees" },
+    { icon: UserPlus, label: "Pending Registrations", path: "/pending-employees" },
     { icon: Building2, label: "Departments", path: "/departments" },
     { icon: Bell, label: "Notices", path: "/notices" }
   ];
@@ -44,7 +46,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     )}>
       {/* Logo and Brand */}
       <div className="p-4 border-b border-gray-200 dark:border-slate-800">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+        <div className="flex items-center gap-3 cursor-pointer mb-3" onClick={() => navigate('/')}>
           <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg">
             <img
               src="/Probus Logo white.svg"

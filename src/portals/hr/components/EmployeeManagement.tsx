@@ -26,7 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "../../shared/ui/label";
 import { Textarea } from "../../shared/ui/textarea";
 
-const EmployeeManagement = () => {
+const EmployeeManagement = ({ onOpenChat }: { onOpenChat?: (employeeId: string, employeeName: string, callType?: 'voice' | 'video') => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -198,8 +198,10 @@ const EmployeeManagement = () => {
     });
   };
 
-  const handleContactEmployee = (email: string) => {
-    window.location.href = `mailto:${email}`;
+  const handleContactEmployee = (employeeId: string, employeeName: string, callType?: 'voice' | 'video') => {
+    if (onOpenChat) {
+      onOpenChat(employeeId, employeeName, callType);
+    }
   };
 
    const handleImport = () => {
@@ -282,150 +284,6 @@ const EmployeeManagement = () => {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  size="sm" 
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={handleAddEmployee}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Employee
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add New Employee</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name">Full Name *</Label>
-                      <Input
-                        id="name"
-                        value={employeeForm.name}
-                        onChange={(e) => setEmployeeForm({...employeeForm, name: e.target.value})}
-                        placeholder="John Doe"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={employeeForm.email}
-                        onChange={(e) => setEmployeeForm({...employeeForm, email: e.target.value})}
-                        placeholder="john.doe@company.com"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input
-                        id="phone"
-                        value={employeeForm.phone}
-                        onChange={(e) => setEmployeeForm({...employeeForm, phone: e.target.value})}
-                        placeholder="+1 (555) 000-0000"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="startDate">Start Date *</Label>
-                      <Input
-                        id="startDate"
-                        type="date"
-                        value={employeeForm.startDate}
-                        onChange={(e) => setEmployeeForm({...employeeForm, startDate: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="department">Department *</Label>
-                      <Select value={employeeForm.department} onValueChange={(value) => setEmployeeForm({...employeeForm, department: value})}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Engineering">Engineering</SelectItem>
-                          <SelectItem value="Marketing">Marketing</SelectItem>
-                          <SelectItem value="HR">HR</SelectItem>
-                          <SelectItem value="Finance">Finance</SelectItem>
-                          <SelectItem value="Sales">Sales</SelectItem>
-                          <SelectItem value="Operations">Operations</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="position">Position *</Label>
-                      <Input
-                        id="position"
-                        value={employeeForm.position}
-                        onChange={(e) => setEmployeeForm({...employeeForm, position: e.target.value})}
-                        placeholder="Software Engineer"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="location">Location</Label>
-                      <Input
-                        id="location"
-                        value={employeeForm.location}
-                        onChange={(e) => setEmployeeForm({...employeeForm, location: e.target.value})}
-                        placeholder="New York"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="manager">Manager</Label>
-                      <Input
-                        id="manager"
-                        value={employeeForm.manager}
-                        onChange={(e) => setEmployeeForm({...employeeForm, manager: e.target.value})}
-                        placeholder="Manager Name"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="employeeType">Employment Type</Label>
-                      <Select value={employeeForm.employeeType} onValueChange={(value) => setEmployeeForm({...employeeForm, employeeType: value})}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="full-time">Full-time</SelectItem>
-                          <SelectItem value="part-time">Part-time</SelectItem>
-                          <SelectItem value="contract">Contract</SelectItem>
-                          <SelectItem value="intern">Intern</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="status">Status</Label>
-                      <Select value={employeeForm.status} onValueChange={(value) => setEmployeeForm({...employeeForm, status: value})}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="probation">Probation</SelectItem>
-                          <SelectItem value="on-leave">On Leave</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="flex gap-3 pt-4">
-                    <Button onClick={handleSaveEmployee} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                      Add Employee
-                    </Button>
-                    <Button onClick={() => setIsAddDialogOpen(false)} variant="outline" className="flex-1">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
 
@@ -619,7 +477,8 @@ const EmployeeManagement = () => {
                             size="sm"
                             variant="outline"
                             className="border-blue-200 hover:bg-blue-50"
-                            onClick={() => handleContactEmployee(employee.email)}
+                            onClick={() => handleContactEmployee(employee.id, employee.name)}
+                            title="Send Message"
                           >
                             <Mail className="w-3 h-3" />
                           </Button>

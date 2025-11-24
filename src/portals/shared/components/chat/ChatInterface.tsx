@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage } from '@/types/chat';
-import { Card, CardContent } from "../../shared/ui/card";
+import { Card, CardContent } from "../../../shared/ui/card";
+import { Button } from "../../../shared/ui/button";
 import { localDb } from '@/integrations/local-db';
 import { useToast } from "@/hooks/use-toast";
-import ChatHeader from './ChatHeader';
+import { Phone, Video, PhoneOff, Mic, MicOff, VideoIcon, VideoOff } from 'lucide-react';
 import ChatInput from './ChatInput';
-import { ScrollArea } from "../../shared/ui/scroll-area";
-import { Avatar, AvatarFallback } from "../../shared/ui/avatar";
-import { Skeleton } from "../../shared/ui/skeleton";
+import { ScrollArea } from "../../../shared/ui/scroll-area";
+import { Avatar, AvatarFallback } from "../../../shared/ui/avatar";
+import { Skeleton } from "../../../shared/ui/skeleton";
 
 interface ChatInterfaceProps {
   groupId?: string;
   isGroupChat?: boolean;
   userId: string;
   userName: string;
+  selectedEmployee?: { id: string; name: string; callType?: 'voice' | 'video' } | null;
 }
 
 interface DbChatMessage {
@@ -28,10 +30,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   groupId,
   isGroupChat = false,
   userId,
-  userName
+  userName,
+  selectedEmployee
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInCall, setIsInCall] = useState(false);
+  const [callType, setCallType] = useState<'voice' | 'video' | null>(null);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +48,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Auto-initiate call if callType is specified
+  useEffect(() => {
+    if (selectedEmployee?.callType && !isInCall) {
+      setCallType(selectedEmployee.callType);
+      setIsInCall(true);
+      const callTypeName = selectedEmployee.callType === 'voice' ? 'Voice Call' : 'Video Call';
+      toast({
+        title: callTypeName,
+        description: `Starting ${callTypeName.toLowerCase()} with ${selectedEmployee.name}...`,
+      });
+    }
+  }, [selectedEmployee, isInCall, toast]);
 
   // Fetch messages
   useEffect(() => {
@@ -138,19 +156,31 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   // Handle voice call
   const handleVoiceCall = async () => {
-    // In a real implementation, this would initiate a call with another user
+    setCallType('voice');
+    setIsInCall(true);
     toast({
       title: "Voice Call",
-      description: "Initiating voice call..."
+      description: selectedEmployee ? `Starting voice call with ${selectedEmployee.name}...` : "Initiating voice call..."
     });
   };
 
   // Handle video call
   const handleVideoCall = async () => {
-    // In a real implementation, this would initiate a video call with another user
+    setCallType('video');
+    setIsInCall(true);
     toast({
       title: "Video Call",
-      description: "Initiating video call..."
+      description: selectedEmployee ? `Starting video call with ${selectedEmployee.name}...` : "Initiating video call..."
+    });
+  };
+
+  // Handle end call
+  const handleEndCall = () => {
+    setIsInCall(false);
+    setCallType(null);
+    toast({
+      title: "Call Ended",
+      description: "The call has been disconnected."
     });
   };
 
@@ -223,15 +253,96 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <Card className="h-full flex flex-col">
-      <ChatHeader
-        groupId={groupId}
-        isGroupChat={isGroupChat}
-        userId={userId}
-        onCall={handleVoiceCall}
-        onVideoCall={handleVideoCall}
-        onScheduleMeeting={handleScheduleMeeting}
-      />
+    <Card className="h-full flex flex-col relative">
+      {/* Call Overlay */}
+      {isInCall && (
+        <div className="absolute inset-0 z-50 bg-gradient-to-br from-blue-600 to-blue-800 flex flex-col items-center justify-center text-white">
+          <div className="text-center space-y-6">
+            {/* Call Icon */}
+            <div className="w-24 h-24 mx-auto bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+              {callType === 'voice' ? (
+                <Phone className="w-12 h-12" />
+              ) : (
+                <Video className="w-12 h-12" />
+              )}
+            </div>
+            
+            {/* Call Info */}
+            <div>
+              <h3 className="text-2xl font-semibold mb-2">
+                {selectedEmployee?.name || 'Unknown'}
+              </h3>
+              <p className="text-blue-100">
+                {callType === 'voice' ? 'Voice Call' : 'Video Call'} in progress...
+              </p>
+            </div>
+
+            {/* Call Duration Timer */}
+            <div className="text-3xl font-mono">
+              00:00
+            </div>
+
+            {/* Call Controls */}
+            <div className="flex gap-4 mt-8">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-14 h-14 rounded-full bg-white/20 hover:bg-white/30 text-white"
+                title="Mute/Unmute"
+              >
+                <Mic className="w-6 h-6" />
+              </Button>
+              
+              {callType === 'video' && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-14 h-14 rounded-full bg-white/20 hover:bg-white/30 text-white"
+                  title="Turn off camera"
+                >
+                  <VideoIcon className="w-6 h-6" />
+                </Button>
+              )}
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white"
+                onClick={handleEndCall}
+                title="End call"
+              >
+                <PhoneOff className="w-6 h-6" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="p-3 border-b flex items-center justify-between bg-[#0095FF] text-white">
+        <h3 className="font-semibold text-lg">
+          {selectedEmployee ? `Chat with ${selectedEmployee.name}` : 'Messages'}
+        </h3>
+        <div className="flex items-center gap-1">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-white hover:bg-white/20 rounded-full"
+            onClick={handleVoiceCall}
+            disabled={isInCall}
+          >
+            <Phone className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-white hover:bg-white/20 rounded-full"
+            onClick={handleVideoCall}
+            disabled={isInCall}
+          >
+            <Video className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
       <CardContent className="flex-1 flex flex-col p-0">
         {renderMessages()}
         <ChatInput

@@ -28,7 +28,7 @@ const ManagerApprovals = () => {
   const [activeTab, setActiveTab] = useState('todo');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [selectedApproval, setSelectedApproval] = useState<ApprovalWithDetails | null>(null);
+  const [selectedApproval, setSelectedApproval] = useState<any | null>(null);
   const [isFlowchartOpen, setIsFlowchartOpen] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState({
     dateFrom: '',
@@ -37,62 +37,353 @@ const ManagerApprovals = () => {
     type: 'all'
   });
 
-  // Fetch approvals data - manager specific (only team approvals)
-  const { data: approvalsData, isLoading: approvalsLoading, isError: approvalsError, error: approvalsErrorDetails, refetch: refetchApprovals } = useQuery({
-    queryKey: ['manager-approvals'],
-    queryFn: async () => {
-      try {
-        console.log('Fetching manager approvals data...');
-        // In a real app, this would filter by the manager's team members
-        const { data, error } = await localDb
-          .from('approvals')
-          .select(`
-            *,
-            employee:employees(name, position),
-            department:departments(name)
-          `)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('Manager approvals data fetch error:', error);
-          throw error;
+  // Mock approvals data for manager - Team requests
+  const mockApprovals = [
+    {
+      id: 'MGR001',
+      type: 'leave',
+      employee: { name: 'Sarah Johnson', position: 'Senior Developer' },
+      title: 'Annual Leave Request',
+      description: 'Christmas vacation - 2 weeks',
+      created_at: '2024-11-20T09:00:00',
+      status: 'pending',
+      priority: 'medium',
+      department: { name: 'Engineering' },
+      employee_id: 'emp-001',
+      current_approver_id: '550e8400-e29b-41d4-a716-446655440000',
+      approvers_completed: [],
+      requestedDates: 'Dec 23, 2024 - Jan 5, 2025',
+      days: 10,
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'You (Manager)',
+          approverRole: 'Engineering Manager',
+          approverDepartment: 'Engineering',
+          status: 'pending',
+          order: 1,
+          assignedDate: '2024-11-20T09:00:00',
+          timeTaken: null,
+          comments: ''
+        },
+        {
+          id: '2',
+          approverName: 'Lisa Brown',
+          approverRole: 'HR Manager',
+          approverDepartment: 'Human Resources',
+          status: 'waiting',
+          order: 2,
+          assignedDate: null,
+          timeTaken: null,
+          comments: ''
         }
-        console.log('Manager approvals data fetched:', data);
-        return data as unknown as ApprovalWithDetails[];
-      } catch (error) {
-        console.error('Error fetching manager approvals data:', error);
-        throw error;
-      }
+      ]
     },
-    retry: false
-  });
-
-  // Fetch employees with full details for approver information
-  const { data: employeesData } = useQuery({
-    queryKey: ['employees-for-approvers'],
-    queryFn: async () => {
-      try {
-        const { data, error } = await localDb
-          .from('employees')
-          .select(`
-            id, 
-            name, 
-            position, 
-            department_id,
-            profile_image_url,
-            departments (name)
-          `)
-          .order('name');
-
-        if (error) throw error;
-        return data;
-      } catch (error) {
-        console.error('Error fetching employees:', error);
-        throw error;
-      }
+    {
+      id: 'MGR002',
+      type: 'expense',
+      employee: { name: 'Mike Chen', position: 'Marketing Specialist' },
+      title: 'Client Dinner Expense',
+      description: 'Business dinner with key client - Project Alpha',
+      created_at: '2024-11-19T14:30:00',
+      status: 'pending',
+      priority: 'high',
+      department: { name: 'Marketing' },
+      employee_id: 'emp-002',
+      current_approver_id: '550e8400-e29b-41d4-a716-446655440000',
+      approvers_completed: [],
+      amount: '$350.00',
+      receiptDate: 'Nov 18, 2024',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'You (Manager)',
+          approverRole: 'Marketing Manager',
+          approverDepartment: 'Marketing',
+          status: 'pending',
+          order: 1,
+          assignedDate: '2024-11-19T14:30:00',
+          timeTaken: null,
+          comments: ''
+        },
+        {
+          id: '2',
+          approverName: 'David Kim',
+          approverRole: 'Finance Manager',
+          approverDepartment: 'Finance',
+          status: 'waiting',
+          order: 2,
+          assignedDate: null,
+          timeTaken: null,
+          comments: ''
+        }
+      ]
     },
-    retry: false
-  });
+    {
+      id: 'MGR003',
+      type: 'overtime',
+      employee: { name: 'Emily Davis', position: 'Junior Developer' },
+      title: 'Weekend Overtime Request',
+      description: 'Critical bug fixes required for production release',
+      created_at: '2024-11-21T10:15:00',
+      status: 'pending',
+      priority: 'high',
+      department: { name: 'Engineering' },
+      employee_id: 'emp-003',
+      current_approver_id: '550e8400-e29b-41d4-a716-446655440000',
+      approvers_completed: [],
+      requestedHours: 8,
+      requestedDate: 'Nov 23, 2024',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'You (Manager)',
+          approverRole: 'Engineering Manager',
+          approverDepartment: 'Engineering',
+          status: 'pending',
+          order: 1,
+          assignedDate: '2024-11-21T10:15:00',
+          timeTaken: null,
+          comments: ''
+        }
+      ]
+    },
+    {
+      id: 'MGR004',
+      type: 'leave',
+      employee: { name: 'Robert Wilson', position: 'Sales Representative' },
+      title: 'Sick Leave',
+      description: 'Medical appointment and recovery',
+      created_at: '2024-11-18T08:00:00',
+      status: 'approved',
+      priority: 'medium',
+      department: { name: 'Sales' },
+      employee_id: 'emp-004',
+      current_approver_id: null,
+      approvers_completed: ['550e8400-e29b-41d4-a716-446655440000'],
+      requestedDates: 'Nov 18-19, 2024',
+      days: 2,
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'You (Manager)',
+          approverRole: 'Sales Manager',
+          approverDepartment: 'Sales',
+          status: 'approved',
+          order: 1,
+          assignedDate: '2024-11-18T08:00:00',
+          approvedDate: '2024-11-18T09:30:00',
+          timeTaken: '1 hour 30 minutes',
+          comments: 'Approved. Hope you feel better soon.'
+        },
+        {
+          id: '2',
+          approverName: 'Lisa Brown',
+          approverRole: 'HR Manager',
+          approverDepartment: 'Human Resources',
+          status: 'approved',
+          order: 2,
+          assignedDate: '2024-11-18T09:30:00',
+          approvedDate: '2024-11-18T11:00:00',
+          timeTaken: '1 hour 30 minutes',
+          comments: 'Processed. Get well soon.'
+        }
+      ]
+    },
+    {
+      id: 'MGR005',
+      type: 'equipment',
+      employee: { name: 'Jennifer Martinez', position: 'UX Designer' },
+      title: 'New MacBook Pro Request',
+      description: 'Current laptop is 4 years old and performance is degraded',
+      created_at: '2024-11-17T13:20:00',
+      status: 'pending',
+      priority: 'low',
+      department: { name: 'Design' },
+      employee_id: 'emp-005',
+      current_approver_id: '550e8400-e29b-41d4-a716-446655440000',
+      approvers_completed: [],
+      estimatedCost: '$2,499',
+      justification: 'Running design software is slow, affecting productivity',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'You (Manager)',
+          approverRole: 'Design Manager',
+          approverDepartment: 'Design',
+          status: 'pending',
+          order: 1,
+          assignedDate: '2024-11-17T13:20:00',
+          timeTaken: null,
+          comments: ''
+        },
+        {
+          id: '2',
+          approverName: 'David Kim',
+          approverRole: 'Finance Manager',
+          approverDepartment: 'Finance',
+          status: 'waiting',
+          order: 2,
+          assignedDate: null,
+          timeTaken: null,
+          comments: ''
+        },
+        {
+          id: '3',
+          approverName: 'IT Department',
+          approverRole: 'IT Procurement',
+          approverDepartment: 'IT',
+          status: 'waiting',
+          order: 3,
+          assignedDate: null,
+          timeTaken: null,
+          comments: ''
+        }
+      ]
+    },
+    {
+      id: 'MGR006',
+      type: 'training',
+      employee: { name: 'Alex Thompson', position: 'Data Analyst' },
+      title: 'AWS Certification Course',
+      description: 'Advanced AWS Solutions Architect certification training',
+      created_at: '2024-11-16T11:00:00',
+      status: 'approved',
+      priority: 'medium',
+      department: { name: 'Data' },
+      employee_id: 'emp-006',
+      current_approver_id: null,
+      approvers_completed: ['550e8400-e29b-41d4-a716-446655440000'],
+      courseName: 'AWS Solutions Architect - Professional',
+      duration: '5 days',
+      cost: '$1,500',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'You (Manager)',
+          approverRole: 'Data Manager',
+          approverDepartment: 'Data',
+          status: 'approved',
+          order: 1,
+          assignedDate: '2024-11-16T11:00:00',
+          approvedDate: '2024-11-16T15:30:00',
+          timeTaken: '4 hours 30 minutes',
+          comments: 'Approved. This aligns with our cloud migration strategy.'
+        },
+        {
+          id: '2',
+          approverName: 'Lisa Brown',
+          approverRole: 'HR Manager',
+          approverDepartment: 'Human Resources',
+          status: 'approved',
+          order: 2,
+          assignedDate: '2024-11-16T15:30:00',
+          approvedDate: '2024-11-17T09:00:00',
+          timeTaken: '17 hours 30 minutes',
+          comments: 'Approved for professional development.'
+        }
+      ]
+    },
+    {
+      id: 'MGR007',
+      type: 'remote_work',
+      employee: { name: 'Chris Anderson', position: 'Content Writer' },
+      title: 'Permanent Remote Work Request',
+      description: 'Request to work remotely full-time from home office',
+      created_at: '2024-11-15T09:45:00',
+      status: 'pending',
+      priority: 'low',
+      department: { name: 'Marketing' },
+      employee_id: 'emp-007',
+      current_approver_id: '550e8400-e29b-41d4-a716-446655440000',
+      approvers_completed: [],
+      reason: 'Relocation to different city for family reasons',
+      proposedStartDate: 'Jan 1, 2025',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'You (Manager)',
+          approverRole: 'Marketing Manager',
+          approverDepartment: 'Marketing',
+          status: 'pending',
+          order: 1,
+          assignedDate: '2024-11-15T09:45:00',
+          timeTaken: null,
+          comments: ''
+        },
+        {
+          id: '2',
+          approverName: 'Lisa Brown',
+          approverRole: 'HR Manager',
+          approverDepartment: 'Human Resources',
+          status: 'waiting',
+          order: 2,
+          assignedDate: null,
+          timeTaken: null,
+          comments: ''
+        }
+      ]
+    },
+    {
+      id: 'MGR008',
+      type: 'expense',
+      employee: { name: 'Patricia Lee', position: 'Account Manager' },
+      title: 'Travel Expense - NYC Client Visit',
+      description: 'Flight, hotel, and meals for 3-day client meeting',
+      created_at: '2024-11-14T16:20:00',
+      status: 'approved',
+      priority: 'high',
+      department: { name: 'Sales' },
+      employee_id: 'emp-008',
+      current_approver_id: null,
+      approvers_completed: ['550e8400-e29b-41d4-a716-446655440000'],
+      amount: '$1,850.00',
+      travelDates: 'Nov 10-12, 2024',
+      approvalFlow: [
+        {
+          id: '1',
+          approverName: 'You (Manager)',
+          approverRole: 'Sales Manager',
+          approverDepartment: 'Sales',
+          status: 'approved',
+          order: 1,
+          assignedDate: '2024-11-14T16:20:00',
+          approvedDate: '2024-11-14T17:00:00',
+          timeTaken: '40 minutes',
+          comments: 'Approved. Important client relationship.'
+        },
+        {
+          id: '2',
+          approverName: 'David Kim',
+          approverRole: 'Finance Manager',
+          approverDepartment: 'Finance',
+          status: 'approved',
+          order: 2,
+          assignedDate: '2024-11-14T17:00:00',
+          approvedDate: '2024-11-15T10:30:00',
+          timeTaken: '17 hours 30 minutes',
+          comments: 'Approved. Reimbursement processed.'
+        }
+      ]
+    }
+  ];
+
+  // Use mock data instead of database query
+  const approvalsData = mockApprovals;
+  const approvalsLoading = false;
+  const approvalsError = false;
+
+  // Mock employees data
+  const employeesData = [
+    { id: 'emp-001', name: 'Sarah Johnson', position: 'Senior Developer', department_id: 'dept-001', departments: { name: 'Engineering' } },
+    { id: 'emp-002', name: 'Mike Chen', position: 'Marketing Specialist', department_id: 'dept-002', departments: { name: 'Marketing' } },
+    { id: 'emp-003', name: 'Emily Davis', position: 'Junior Developer', department_id: 'dept-001', departments: { name: 'Engineering' } },
+    { id: 'emp-004', name: 'Robert Wilson', position: 'Sales Representative', department_id: 'dept-003', departments: { name: 'Sales' } },
+    { id: 'emp-005', name: 'Jennifer Martinez', position: 'UX Designer', department_id: 'dept-004', departments: { name: 'Design' } },
+    { id: 'emp-006', name: 'Alex Thompson', position: 'Data Analyst', department_id: 'dept-005', departments: { name: 'Data' } },
+    { id: 'emp-007', name: 'Chris Anderson', position: 'Content Writer', department_id: 'dept-002', departments: { name: 'Marketing' } },
+    { id: 'emp-008', name: 'Patricia Lee', position: 'Account Manager', department_id: 'dept-003', departments: { name: 'Sales' } }
+  ];
 
   // Get employee details by ID
   const getEmployeeDetails = (employeeId: string) => {
@@ -361,34 +652,8 @@ const ManagerApprovals = () => {
     );
   };
 
-  // Check if there are any errors
-  if (approvalsError) {
-    return (
-      <div className="flex-1 p-4 sm:p-6 bg-gray-50 min-h-screen">
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Manager Approvals</h1>
-          </div>
-
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Approvals Data</h2>
-            <p className="text-red-700 mb-4">
-              There was an error loading the approvals data. Please try refreshing the page.
-            </p>
-            {approvalsErrorDetails && (
-              <div className="text-left bg-red-100 p-3 rounded mb-4">
-                <p className="font-medium text-red-800">Error Details:</p>
-                <p className="text-red-700 text-sm">{approvalsErrorDetails?.message || 'Unknown error'}</p>
-              </div>
-            )}
-            <Button onClick={() => refetchApprovals()} className="bg-red-600 hover:bg-red-700">
-              Refresh Page
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Check if there are any errors - removed for mock data
+  // Using mock data so no error handling needed
 
   return (
     <div className="flex-1 p-4 sm:p-6 bg-gray-50 min-h-screen">
@@ -543,7 +808,7 @@ const ManagerApprovals = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredApprovals.map((approval: ApprovalWithDetails) => (
+                      filteredApprovals.map((approval: any) => (
                         <TableRow key={approval.id}>
                           <TableCell>
                             <div className="w-3 h-3 rounded-full bg-blue-500"></div>

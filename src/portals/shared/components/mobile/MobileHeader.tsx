@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import NotificationCenter from '../NotificationCenter';
 
 interface MobileHeaderProps {
   sidebarOpen: boolean;
@@ -32,6 +33,8 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Notification Center */}
+          <NotificationCenter />
           <button 
             className="p-2 rounded-md bg-blue-500 text-white"
             onClick={() => setSidebarOpen(!sidebarOpen)}
