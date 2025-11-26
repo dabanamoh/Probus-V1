@@ -2,174 +2,305 @@
 
 ## 📖 Complete Application Guide
 
-**📚 For detailed documentation on how to use the application from login to all dashboard features, please see:**
+**📚 For comprehensive documentation on the application, please see:**
 
-👉 **[APPLICATION_GUIDE.md](APPLICATION_GUIDE.md)** - Complete user manual covering:
-- 🔐 Login & Authentication Process
-- 🏢 Admin Dashboard - Complete Management Suite  
-- 👨‍💼 Employee Dashboard - Personal Productivity Hub
-- 👨‍💼 Manager Dashboard - Team Leadership Interface
-- 📝 Employee Onboarding Process
-- 🔧 Technical Features & AI Analytics
+- 👉 **[USERFLOW.md](USERFLOW.md)** - Complete user flow documentation covering all portals and features
+- 👉 **[BACKEND_INTEGRATION_GUIDE.md](BACKEND_INTEGRATION_GUIDE.md)** - Backend integration guide for API endpoints and data structures
+
+## Overview
+
+Probus is a comprehensive, role-based HR and employee management system with four distinct portals:
+- 🔐 **Admin Portal** - Full system control and management
+- 👔 **HR Portal** - Employee lifecycle and HR operations
+- 👨‍💼 **Manager Portal** - Team management and leadership
+- 👤 **Employee Portal** - Self-service and productivity tools
 
 ## Quick Demo Access
 
-| Role | Email | Password | Dashboard |
-|------|--------|----------|----------|
-| **Admin** | `admin@probusemployee.com` | `AdminPass123!` | `/` (Admin Dashboard) |
-| **Employee** | `employee@probusemployee.com` | `EmployeePass123!` | `/app` (Employee Dashboard) |
+| Role | Email | Password | Dashboard Route |
+|------|--------|----------|----------------|
+| **Admin** | `admin@probusemployee.com` | `AdminPass123!` | `/admin` |
+| **HR** | `hr@probusemployee.com` | `HRPass123!` | `/hr` |
+| **Manager** | `manager@probusemployee.com` | `ManagerPass123!` | `/manager` |
+| **Employee** | `employee@probusemployee.com` | `EmployeePass123!` | `/app` |
 
 ## Project Overview
 
-The Probus Employee Productivity Suite is a comprehensive employee-facing dashboard that serves as the data-generation engine for the Admin Analytics Dashboard. Every interaction within this suite is monitored and analyzed by AI to generate risk assessments, KPIs, and compliance scores.
+Probus Employee Productivity Suite is a modern, full-stack HR and employee management platform designed for small to medium businesses. It provides role-based access control (RBAC) with specialized portals for different organizational roles.
 
-## Core Product Concept
+## Core Features
 
-This Employee Dashboard is a fully-functional workspace where employees perform their daily tasks (chat, email, manage tasks, clock in). All interactions are logged and sent to the backend for AI analysis in the admin panel.
+The application provides a comprehensive suite of HR and employee management tools:
+- **Multi-Portal Architecture** - Separate portals for Admin, HR, Manager, and Employee roles
+- **Role-Based Access Control** - Fine-grained permissions system
+- **Employee Lifecycle Management** - From onboarding to offboarding
+- **Approval Workflows** - Multi-level approval system for leaves, resignations, rewards, and feedback
+- **AI-Powered Safety Monitoring** - Real-time safety and compliance monitoring
+- **Integrated Communication** - Built-in chat and messaging system
+- **Task & Project Management** - Comprehensive task tracking and assignment
+- **Time Tracking** - Clock in/out with geolocation
+- **Document Management** - Secure document storage and access
 
-## Features
+## Portal-Specific Features
 
-### 1. Unified Landing Page / Workspace
-- Daily summary dashboard showing unread messages, upcoming tasks, team announcements
-- Quick clock-in/out widget with geolocation tracking
-- Comprehensive employee activity statistics including:
-  - Pending emails and unread chats
-  - Announcements and leave days
-  - Late resumption days and task completion
-  - Upcoming meetings and missed calls
-  - Visual charts for task completion and communication activity
+### Admin Portal (`/admin`)
+- **Dashboard** - System overview with key metrics and statistics
+- **Employee Management** - Full CRUD operations for employee records
+- **Department Management** - Create and manage organizational departments
+- **Pending Registrations** - Approve or reject new employee registrations
+- **Approvals** - Review and process all approval requests (leaves, resignations, rewards, feedback)
+- **Notices** - Create and manage company-wide announcements
+- **Safety Dashboard** - AI-powered safety monitoring and compliance
+- **Settings** - System configuration, user management, integrations, themes, rules & ethics
+- **Events Management** - Create and manage company events
+- **KPI Management** - Set and track Key Performance Indicators
+- **Rewards & Recognition** - Manage employee rewards and recognition programs
+- **Email Management** - Internal email system for admins
 
-### 2. Communication Hub
-- Real-time chat interface (Slack/Discord-like) with direct messages and team channels
-- Integrated email client for sending, receiving, and organizing emails
-- Voice and video calling capabilities
-- Meeting scheduling and group meeting support
-- Call and meeting recording functionality
+### HR Portal (`/hr`)
+- **Dashboard** - HR-specific metrics and pending items
+- **Employee Management** - HR view of employee lifecycle
+- **Recruitment Panel** - Job postings and applicant tracking
+- **Leave Approvals** - Review and approve employee leave requests
+- **Policy Management** - Create and manage company policies
+- **HR Reports** - Generate HR analytics and reports
+- **Whistleblower Reports** - Review anonymous incident reports
+- **Settings** - HR-specific configurations
 
-### 3. Productivity & Task Management
-- Personal task manager for individual to-do lists
-- Team project management with Kanban board or list view
+### Manager Portal (`/manager`)
+- **Dashboard** - Team overview and performance metrics
+- **Team Management** - View and manage direct reports
+- **KPI Management** - Set and track team KPIs
+- **Approvals** - Approve team leave and other requests
+- **Reports** - Team performance and activity reports
+- **Task Assignment** - Assign and track team tasks
 
-### 4. Personal Dashboard & Tools
-- Time tracking with geofenced clock-in/out
-- Profile management and document access
-- Company directory with searchable employee contacts
+### Employee Portal (`/app`)
+- **Dashboard** - Personal workspace with daily summary
+- **My Work** - Personal tasks, notices, and leave requests
+- **Leave Management** - Submit and track leave requests
+- **Task Manager** - View and update assigned tasks
+- **Time Tracking** - Clock in/out with geolocation
+- **Directory** - Company employee directory
+- **Apps** - Access to integrated applications
+- **Email Client** - Internal email communication
+- **Whistleblower** - Anonymous incident reporting
+- **Rules & Ethics** - Access to company policies
+- **Personal Reports** - View personal performance metrics
+- **Activity Analytics** - Personal activity and productivity analytics
+- **Settings** - Personal preferences and profile management
 
-### 5. Rules & Ethics Center
-- Access to company policies, code of conduct, and ethics guidelines
-- Supports compliance monitoring by ensuring employee access to rules
+## Technical Stack
 
-### 6. Whistleblower Reporting
-- Anonymous incident reporting system for employees to report concerns
-- Confidentiality guarantees to protect employee identity
-- Categories for different types of incidents (financial, HR, safety, etc.)
-- Option for non-anonymous reporting with contact information
-- Comprehensive reporting guidelines and immediate help resources
+### Frontend
+- **Framework**: React 18.3.1 with TypeScript
+- **Build Tool**: Vite 5.4.1
+- **Styling**: Tailwind CSS 3.4.11 with pastel blue theme
+- **UI Components**: shadcn/ui with Radix UI primitives
+- **Icons**: Lucide React
+- **Routing**: React Router DOM v6.26.2
+- **State Management**: React Query (TanStack Query) + Context API
+- **Forms**: React Hook Form with Zod validation
+- **Database**: IndexedDB (via idb) for local data storage
+- **Theme**: Dark/Light mode support with next-themes
 
-## Technical Implementation
+### Key Dependencies
+- `@radix-ui/*` - Accessible UI component primitives
+- `react-router-dom` - Client-side routing
+- `@tanstack/react-query` - Server state management
+- `react-hook-form` + `zod` - Form handling and validation
+- `recharts` - Data visualization
+- `date-fns` - Date manipulation
+- `sonner` - Toast notifications
+- `lucide-react` - Icon library
 
-### Framework & Styling
-- Built with React + Vite + Tailwind CSS
-- Follows the same UI components, color scheme, and framework as the Admin Dashboard
+### Architecture
+- **Multi-Portal Design**: Separate portals with shared components
+- **Protected Routes**: Role-based access control on all routes
+- **Lazy Loading**: Code-splitting for better performance
+- **Context Providers**: AuthContext and ThemeContext for global state
+- **Local-first**: IndexedDB integration for offline capability
 
-### Data Logging & Monitoring
-All user activities are logged for AI analysis:
+## Installation & Setup
 
-1. **User Activity Events**: Logins, logouts, session duration, page views
-2. **Chat Monitoring**: Every message sent, file shared, and emoji reaction
-3. **Call Monitoring**: Voice and video calls with duration and participant tracking
-4. **Meeting Monitoring**: Scheduled meetings with attendance and recording status
-5. **Email Monitoring**: All sent, received, and deleted emails
-6. **Time Tracking**: Clock-in/out events with precise timestamps and geolocation
-7. **Task/Project Updates**: Changes to task status, deadlines, and time spent
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn package manager
 
-### Rebranding
-All instances of "Integrity Merit" have been replaced with "Probus".
+### Steps
 
-## Installation
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd integrityment-replica-control
+   ```
 
-1. Clone the repository
-2. Install dependencies:
+2. **Install dependencies**
    ```bash
    npm install
    ```
-3. Start the development server:
+
+3. **Start development server**
    ```bash
    npm run dev
    ```
+   Server runs on `http://localhost:8080`
+
+4. **Build for production**
+   ```bash
+   npm run build
+   ```
+
+5. **Preview production build**
+   ```bash
+   npm run preview
+   ```
+
+### PowerShell Configuration (Windows)
+If you encounter execution policy errors, run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+```
 
 ## Usage
 
-The Employee Dashboard is accessible at `/app` route, separate from the admin interface at `/admin`.
+### Accessing the Application
 
-To populate sample chat data:
-1. Navigate to the chat interface
-2. Click the "Filter" icon in the chat sidebar
-3. Confirm the data population when prompted
+1. **Start the server**: `npm run dev`
+2. **Navigate to**: `http://localhost:8080`
+3. **Login** with demo credentials (see Quick Demo Access above)
+4. You'll be redirected to your role-specific portal
 
-## Data Flow
+### Portal Routes
 
-1. Employee interactions in the dashboard generate audit events
-2. Events are logged and sent to the backend
-3. Backend processes events for AI analysis
-4. AI analysis results are displayed in the Admin Analytics Dashboard
+| Portal | Base Route | Allowed Roles |
+|--------|-----------|---------------|
+| Admin Portal | `/admin` | admin, owner |
+| HR Portal | `/hr` | hr |
+| Manager Portal | `/manager` or `/leadership` | manager, supervisor, director, hod |
+| Employee Portal | `/app` | employee |
+| Safety Dashboard | `/safety` | admin, hr |
+| Settings | `/settings` | All authenticated users |
 
-## Modules
+## Application Structure
 
-### Employee Dashboard (User Interface)
-- `/app/dashboard` - Main landing page with daily summary and activity statistics
-- `/app/chat` - Real-time messaging interface with calling and meeting features
-- `/app/mail` - Email client
-- `/app/tasks` - Task and project management
-- `/app/time` - Time tracking and clock-in/out
-- `/app/profile` - Personal profile and documents
-- `/app/directory` - Company employee directory
-- `/app/rules` - Rules and ethics center
-- `/app/whistleblower` - Anonymous incident reporting system
+```
+src/
+├── portals/
+│   ├── admin/          # Admin portal components and pages
+│   ├── hr/             # HR portal components and pages
+│   ├── manager/        # Manager portal components and pages
+│   ├── employee/       # Employee portal components and pages
+│   └── shared/         # Shared components, UI, layouts, and pages
+├── context/
+│   ├── AuthContext.tsx # Authentication state management
+│   └── ThemeContext.tsx # Theme state management
+├── hooks/              # Custom React hooks
+├── services/           # API and service layer
+├── types/              # TypeScript type definitions
+├── integrations/       # Local database and integrations
+└── lib/                # Utility functions and helpers
+```
 
-### Audit Logging Services
-- `auditService.ts` - Core logging functionality
-- `chatService.ts` - Chat event logging
-- `callService.ts` - Voice/video call logging
-- `meetingService.ts` - Meeting scheduling and tracking
-- `emailService.ts` - Email activity logging
-- `taskService.ts` - Task activity logging
+## Key Features Implemented
 
-### Employee Statistics
-- `useEmployeeStats.ts` - Hook for fetching employee activity statistics
-- `EmployeeStatsChart.tsx` - Component for visualizing employee statistics
+### Authentication & Authorization
+- Multi-role login system
+- First-time login wizard
+- Role-based route protection
+- Session management
+- Password validation and security
 
-### Whistleblower Reporting
-- `Whistleblower.tsx` - Component for anonymous incident reporting
+### Admin Features
+- Employee registration approval workflow
+- Department CRUD operations
+- Company-wide notice management
+- Multi-level approval system (leaves, resignations, rewards, feedback)
+- User account management
+- AI safety monitoring dashboard
+- System settings and configurations
+- Theme customization
+- Integration settings
+- Rules and ethics management
+
+### HR Features
+- Employee lifecycle management
+- Recruitment and applicant tracking
+- Leave request approvals
+- Policy management
+- HR analytics and reporting
+- Whistleblower report review
+
+### Manager Features
+- Team overview and management
+- KPI setting and tracking
+- Team approval workflows
+- Performance monitoring
+- Team reports and analytics
+
+### Employee Features
+- Personal dashboard with activity summary
+- Leave request submission and tracking
+- Task management and tracking
+- Time tracking with clock in/out
+- Employee directory access
+- Email communication
+- Anonymous whistleblower reporting
+- Access to company policies
+- Personal performance analytics
 
 ## Development Guidelines
 
-1. All new features must implement audit logging
-2. Follow the existing UI component patterns
-3. Maintain consistency with the Admin Dashboard styling
-4. Ensure all data-generating actions are properly logged
+1. **Portal Structure**: Keep portal-specific code in respective portal folders
+2. **Shared Components**: Place reusable components in `portals/shared`
+3. **UI Components**: Use shadcn/ui components from `portals/shared/ui`
+4. **Styling**: Follow Tailwind CSS conventions with pastel blue theme
+5. **Type Safety**: Use TypeScript for all new code
+6. **State Management**: Use React Query for server state, Context for global UI state
+7. **Forms**: Use React Hook Form with Zod validation
+8. **Icons**: Use lucide-react for consistency
+9. **Routing**: Protected routes with RBAC for all authenticated pages
+10. **Performance**: Lazy load heavy components and pages
+
+## Current Status
+
+This is **Version 1.0** of the Probus Employee Productivity Suite. The application includes:
+
+✅ Complete multi-portal architecture
+✅ Role-based access control
+✅ Employee onboarding workflow
+✅ Approval workflows (leaves, resignations, rewards, feedback)
+✅ Department and employee management
+✅ Notice and event management
+✅ Time tracking with geolocation
+✅ Task management
+✅ Internal communication (chat, email)
+✅ Whistleblower reporting
+✅ AI safety monitoring
+✅ Dark/Light theme support
+✅ Responsive design
+✅ Local database integration (IndexedDB)
 
 ## Future Enhancements
 
-1. Integration with third-party email providers (Gmail, Outlook)
-2. Advanced geofencing for location-based time tracking
-3. Mobile application development
-4. Enhanced AI analysis dashboards
-5. Advanced reporting and analytics features
-6. Screen sharing capabilities
-7. Advanced meeting features (polls, whiteboard, etc.)
+- Backend API integration
+- Real-time notifications via WebSocket
+- Advanced analytics and reporting
+- Mobile application
+- Third-party integrations (Slack, MS Teams, etc.)
+- Advanced geofencing for time tracking
+- Document version control
+- Performance review system
+- Training and learning management
+- Payroll integration
 
-## Demo Credentials
+## Contributing
 
-For authorized users and testing purposes, the following demo credentials are available:
+This is a proprietary project. For contribution guidelines, please contact the development team.
 
-### Admin Dashboard
-- Email: `admin@probusemployee.com`
-- Password: `AdminPass123!`
+## Support
 
-### Employee Dashboard
-- Email: `employee@probusemployee.com`
-- Password: `EmployeePass123!`
+For issues, questions, or feature requests, please contact the development team.
 
 ## License
 
